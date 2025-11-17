@@ -1,0 +1,112 @@
+FunctionName,Category,SubCategory,ShortDescription,SyntaxTemplate,TypicalUseCase
+SUM,Aggregation,,Adds all numbers in a column.,SUM ( Table[Column] ),Basic total over a numeric column.
+SUMX,Aggregation,Iterator,Evaluates an expression for each row in a table and sums the results.,"SUMX ( Table, Expression )",Row-by-row calculation then aggregation.
+AVERAGE,Aggregation,,Returns the arithmetic mean of a column.,AVERAGE ( Table[Column] ),Simple average of numeric column.
+AVERAGEX,Aggregation,Iterator,Evaluates an expression for each row in a table and averages the results.,"AVERAGEX ( Table, Expression )",Average after row-level calculation.
+MIN,Aggregation,,Returns the smallest value in a column.,MIN ( Table[Column] ),Find minimum numeric value.
+MAX,Aggregation,,Returns the largest value in a column.,MAX ( Table[Column] ),Find maximum numeric value.
+MINX,Aggregation,Iterator,Returns the minimum value of an expression evaluated for each row of a table.,"MINX ( Table, Expression )",Minimum after row-level expression.
+MAXX,Aggregation,Iterator,Returns the maximum value of an expression evaluated for each row of a table.,"MAXX ( Table, Expression )",Maximum after row-level expression.
+COUNT,Aggregation,,Counts non-blank values in a column.,COUNT ( Table[Column] ),Count non-blank numeric values.
+COUNTA,Aggregation,,Counts non-empty values in a column.,COUNTA ( Table[Column] ),Count non-blank of any data type.
+COUNTROWS,Aggregation,,Counts the number of rows in a table.,COUNTROWS ( Table ),Row count of a table or filtered table.
+DISTINCTCOUNT,Aggregation,,Counts the number of distinct values in a column.,DISTINCTCOUNT ( Table[Column] ),Unique value count.
+CALCULATE,Filter / Context,,Evaluates an expression in a modified filter context.,"CALCULATE ( Expression, Filter1, ... )",Change filters for a measure.
+CALCULATETABLE,Filter / Context,,Evaluates a table expression in a modified filter context.,"CALCULATETABLE ( TableExpression, Filter1, ... )",Return filtered table variant.
+FILTER,Filter / Context,,Returns a table with rows that meet a condition.,"FILTER ( Table, Condition )",Row-level filtering inside measures.
+ALL,Filter / Context,,Removes filters from columns or tables.,ALL ( TableOrColumn ),Ignore filters for totals or percentages.
+ALLEXCEPT,Filter / Context,,Removes all filters except those on specified columns.,"ALLEXCEPT ( Table, Column1, ... )",Keep some groupings while clearing others.
+ALLSELECTED,Filter / Context,,Returns all rows in a table ignoring context filters except report selections.,ALLSELECTED ( TableOrColumn ),Respect user selections but ignore visuals-level filters.
+REMOVEFILTERS,Filter / Context,,Clears filters from the specified columns or tables.,REMOVEFILTERS ( TableOrColumn ),Modern alternative to ALL for clearing filters.
+KEEPFILTERS,Filter / Context,,Modifies filter behavior to preserve existing filters.,KEEPFILTERS ( Filter ),Add filters instead of overriding in CALCULATE.
+USERELATIONSHIP,Filter / Context,,Specifies an inactive relationship to use in a calculation.,"USERELATIONSHIP ( Column1, Column2 )",Activate inactive relationship in a measure.
+CROSSFILTER,Filter / Context,,Changes cross-filtering direction for a relationship.,"CROSSFILTER ( Column1, Column2, Direction )",Override relationship direction in a measure.
+ISFILTERED,Filter / Context,,Checks if a column or table is filtered.,ISFILTERED ( ColumnOrTable ),Detect filters to make conditional logic.
+HASONEVALUE,Filter / Context,,Checks if a column has exactly one value in the current context.,HASONEVALUE ( Column ),Validate single selection in slicers or visuals.
+SELECTEDVALUE,Filter / Context,,"Returns the value when the context has one value, otherwise an alternate result.","SELECTEDVALUE ( Column [, Alternate] )",Get slicer/column selection safely.
+VALUES,Filter / Context,,Returns a one-column table of distinct values.,VALUES ( Column ),Distinct list of values in current context.
+RELATED,Relationships,,Returns a related value from another table.,RELATED ( RelatedTable[Column] ),Use related lookup value in a row context.
+RELATEDTABLE,Relationships,,Returns all related rows in another table.,RELATEDTABLE ( Table ),Get related child rows for the current row context.
+ADDCOLUMNS,Table,Iterator,Adds calculated columns to a table expression.,"ADDCOLUMNS ( Table, Name, Expression, ... )",Extend a table with additional calculated columns.
+SUMMARIZE,Table,,Groups a table by specified columns and aggregates.,"SUMMARIZE ( Table, GroupByColumn1, ... )",Build grouped table for further calculations.
+SUMMARIZECOLUMNS,Table,,Returns a summary table over a set of groups.,"SUMMARIZECOLUMNS ( GroupByColumn, ..., [Name], Expression )",Preferred summary function for measures.
+GROUPBY,Table,,Creates a summary table grouped by specified columns.,"GROUPBY ( Table, GroupByColumn1, ... )",Advanced grouping with expression over groups.
+GENERATE,Table,,Joins two tables by combining each row of the first with the entire second table.,"GENERATE ( Table1, Table2 )",Cartesian-like expansion for table logic.
+CROSSJOIN,Table,,Returns the Cartesian product of all rows from all tables.,"CROSSJOIN ( Table1, Table2, ... )",All combinations of rows for scenario analysis.
+UNION,Table,,Returns a table with rows from all input tables.,"UNION ( Table1, Table2, ... )",Append tables (same columns).
+INTERSECT,Table,,Returns rows common to two tables.,"INTERSECT ( Table1, Table2 )",Common rows between tables.
+EXCEPT,Table,,Returns rows in the first table not present in the second.,"EXCEPT ( Table1, Table2 )",Table-level difference.
+NATURALINNERJOIN,Table,,Performs an inner join between two tables based on common columns.,"NATURALINNERJOIN ( Table1, Table2 )",Join tables using matching column names.
+NATURALLEFTOUTERJOIN,Table,,Performs a left outer join between two tables.,"NATURALLEFTOUTERJOIN ( Table1, Table2 )",Left join tables using matching column names.
+TOPN,Table,,Returns the top N rows of a table based on an expression.,"TOPN ( N, Table, OrderByExpression [, Order] )",Top/bottom ranking logic.
+ORDERBY,Table,,Returns a table sorted by specified expressions.,"ORDERBY ( Table, Expression [, Order] )",Sort table expression.
+DISTINCT,Table,,Returns a table of distinct values.,DISTINCT ( ColumnOrTable ),Unique value table for further use.
+DATATABLE,Table,,Creates a table from literal values.,"DATATABLE ( ColumnName, DataType, { {Values} } )",Hard-code small tables in the model.
+TOTALYTD,Time Intelligence,,Evaluates YTD value of an expression.,"TOTALYTD ( Expression, DatesColumn [, YearEndDate] )",Year-to-date calculation.
+TOTALQTD,Time Intelligence,,Evaluates QTD value of an expression.,"TOTALQTD ( Expression, DatesColumn )",Quarter-to-date calculation.
+TOTALMTD,Time Intelligence,,Evaluates MTD value of an expression.,"TOTALMTD ( Expression, DatesColumn )",Month-to-date calculation.
+DATESYTD,Time Intelligence,,Returns a set of dates from the start of the year to the last date in the context.,"DATESYTD ( DatesColumn [, YearEndDate] )",YTD date range table.
+DATESMTD,Time Intelligence,,Returns dates from the start of the month to the last date in the context.,DATESMTD ( DatesColumn ),MTD date range table.
+DATESQTD,Time Intelligence,,Returns dates from the start of the quarter to the last date in the context.,DATESQTD ( DatesColumn ),QTD date range table.
+SAMEPERIODLASTYEAR,Time Intelligence,,Returns a set of dates in the same period of the prior year.,SAMEPERIODLASTYEAR ( DatesColumn ),Compare period to same period last year.
+DATEADD,Time Intelligence,,Shifts a date column by a number of intervals.,"DATEADD ( DatesColumn, NumberOfIntervals, Interval )","Shift date context (e.g., previous month)."
+PARALLELPERIOD,Time Intelligence,,Returns a table that shifts dates in a given interval.,"PARALLELPERIOD ( DatesColumn, NumberOfIntervals, Interval )",Parallel period comparisons.
+PREVIOUSDAY,Time Intelligence,,Returns a table with the previous day.,PREVIOUSDAY ( DatesColumn ),Previous day date range.
+NEXTDAY,Time Intelligence,,Returns a table with the next day.,NEXTDAY ( DatesColumn ),Next day date range.
+PREVIOUSMONTH,Time Intelligence,,Returns a table with the previous month.,PREVIOUSMONTH ( DatesColumn ),Previous month date range.
+NEXTMONTH,Time Intelligence,,Returns a table with the next month.,NEXTMONTH ( DatesColumn ),Next month date range.
+PREVIOUSYEAR,Time Intelligence,,Returns a table with the previous year.,PREVIOUSYEAR ( DatesColumn ),Previous year date range.
+NEXTYEAR,Time Intelligence,,Returns a table with the next year.,NEXTYEAR ( DatesColumn ),Next year date range.
+STARTOFYEAR,Time Intelligence,,Returns the first date of the year in the context.,"STARTOFYEAR ( DatesColumn [, YearEndDate] )",First day of year.
+ENDOFYEAR,Time Intelligence,,Returns the last date of the year in the context.,"ENDOFYEAR ( DatesColumn [, YearEndDate] )",Last day of year.
+STARTOFMONTH,Time Intelligence,,Returns the first date of the month in the context.,STARTOFMONTH ( DatesColumn ),First day of month.
+ENDOFMONTH,Time Intelligence,,Returns the last date of the month in the context.,ENDOFMONTH ( DatesColumn ),Last day of month.
+TODAY,Date & Time,,Returns the current date.,TODAY(),Use for measures evaluated at refresh or query time.
+NOW,Date & Time,,Returns the current date and time.,NOW(),Current date-time stamp.
+DATE,Date & Time,,"Returns a date value from year, month, and day.","DATE ( Year, Month, Day )",Construct a date value.
+DATEDIFF,Date & Time,,Returns the difference between two dates in given units.,"DATEDIFF ( StartDate, EndDate, Interval )",Age or duration between dates.
+YEAR,Date & Time,,Returns the year of a date.,YEAR ( Date ),Extract year from date.
+MONTH,Date & Time,,Returns the month of a date.,MONTH ( Date ),Extract month (1–12).
+DAY,Date & Time,,Returns the day of a date.,DAY ( Date ),Extract day of month.
+WEEKDAY,Date & Time,,Returns the day of the week as a number.,"WEEKDAY ( Date [, ReturnType] )",Numeric day-of-week.
+WEEKNUM,Date & Time,,Returns the week number for a date.,"WEEKNUM ( Date [, ReturnType] )",Week-of-year for calendars.
+IF,Logical,,"Checks a condition and returns one value if TRUE, another if FALSE.","IF ( Condition, TrueResult [, FalseResult] )",Basic branching logic.
+SWITCH,Logical,,Matches an expression to a value list and returns the corresponding result.,"SWITCH ( Expression, Value1, Result1, ... [, Else] )",Multiple-branch logic.
+AND,Logical,,Returns TRUE if all arguments are TRUE.,"AND ( Condition1, Condition2 )",Combine logical tests.
+OR,Logical,,Returns TRUE if any argument is TRUE.,"OR ( Condition1, Condition2 )",Logical OR condition.
+NOT,Logical,,Reverses the logical value of its argument.,NOT ( Condition ),Logical negation.
+COALESCE,Logical,,Returns the first expression that is not blank.,"COALESCE ( Expression1, Expression2, ... )",Replace BLANK with default values.
+DIVIDE,Math & Stats,,Performs division and handles divide-by-zero.,"DIVIDE ( Numerator, Denominator [, AlternateResult] )",Safe division pattern.
+ROUND,Math & Stats,,Rounds a number to a specified number of digits.,"ROUND ( Number, NumDigits )",Standard rounding.
+ROUNDUP,Math & Stats,,"Rounds a number up, away from zero.","ROUNDUP ( Number, NumDigits )",Round up only.
+ROUNDDOWN,Math & Stats,,"Rounds a number down, toward zero.","ROUNDDOWN ( Number, NumDigits )",Round down only.
+INT,Math & Stats,,Rounds a number down to the nearest integer.,INT ( Number ),Integer part only.
+ABS,Math & Stats,,Returns the absolute value of a number.,ABS ( Number ),Remove sign from a value.
+CEILING,Math & Stats,,Rounds a number up to nearest multiple of significance.,"CEILING ( Number, Significance )",Round up to step size.
+FLOOR,Math & Stats,,Rounds a number down to nearest multiple of significance.,"FLOOR ( Number, Significance )",Round down to step size.
+POWER,Math & Stats,,Returns a number raised to a power.,"POWER ( Number, Power )",Exponent calculations.
+SQRT,Math & Stats,,Returns the square root of a number.,SQRT ( Number ),Square root.
+CONCATENATE,Text,,Joins two text strings into one.,"CONCATENATE ( Text1, Text2 )",String concatenation (legacy).
+CONCATENATEX,Text,Iterator,Concatenates text for each row in a table using a delimiter.,"CONCATENATEX ( Table, Expression, Delimiter )",Create delimited lists from rows.
+LEFT,Text,,Returns the leftmost characters from a text value.,"LEFT ( Text, NumChars )",Substring from left side.
+RIGHT,Text,,Returns the rightmost characters from a text value.,"RIGHT ( Text, NumChars )",Substring from right side.
+MID,Text,,Returns characters from the middle of a text string.,"MID ( Text, StartNum, NumChars )",Substring from middle.
+SEARCH,Text,,Finds the starting position of one text string within another.,"SEARCH ( FindText, WithinText [, StartNum] )",Case-insensitive search.
+FIND,Text,,Finds the starting position of one text string; case-sensitive.,"FIND ( FindText, WithinText [, StartNum] )",Case-sensitive search.
+FORMAT,Text,,Formats a value with a specified format string.,"FORMAT ( Value, FormatString )",Display numbers/dates as text.
+UPPER,Text,,Converts text to uppercase.,UPPER ( Text ),Uppercase transformation.
+LOWER,Text,,Converts text to lowercase.,LOWER ( Text ),Lowercase transformation.
+TRIM,Text,,Removes extra spaces from text.,TRIM ( Text ),Clean up spaces in text.
+REPLACE,Text,,Replaces part of a text string with another text string.,"REPLACE ( OldText, StartNum, NumChars, NewText )",Replace characters in a string.
+ISBLANK,Information,,Checks whether a value is blank.,ISBLANK ( Value ),Detect BLANK values.
+ISNUMBER,Information,,Checks whether a value is a number.,ISNUMBER ( Value ),Detect numeric values.
+ISTEXT,Information,,Checks whether a value is text.,ISTEXT ( Value ),Detect text values.
+ISERROR,Information,,Checks whether a value is an error.,ISERROR ( Value ),Detect error results.
+ISEMPTY,Information,,Checks whether a table is empty.,ISEMPTY ( Table ),Detect empty tables.
+CONTAINS,Information,,Checks if a table contains specified values.,"CONTAINS ( Table, Column, Value, ... )",Existence checks in tables.
+CONTAINSROW,Information,,Checks if a table contains a row with specified values.,"CONTAINSROW ( Table, Value1, ... )",Row existence in a table.
+HASONEFILTER,Information,,Checks whether a column has exactly one filter applied.,HASONEFILTER ( Column ),Validate single filter context.
+PATH,Parent-Child,,Returns a delimited text string of IDs representing the path of a parent-child hierarchy.,"PATH ( IDColumn, ParentIDColumn )",Build hierarchy path text.
+PATHITEM,Parent-Child,,Returns the item at the specified position from a path.,"PATHITEM ( Path, Position [, ReturnType] )",Extract level from hierarchy path.
+PATHLENGTH,Parent-Child,,Returns the number of levels in a path.,PATHLENGTH ( Path ),Depth of hierarchy path.
+PATHCONTAINS,Parent-Child,,Checks whether a path contains a specific ID.,"PATHCONTAINS ( Path, ID )",Check if node exists in hierarchy path.
