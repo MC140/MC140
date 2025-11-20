@@ -9,16 +9,18 @@ You can click the Preview link to take a look at your changes.
 --->
 
 If(
-    !Checkbox1.Value 
-        || !Checkbox2.Value
-        || Dropdown1.Selected.Value = "-- Select Line of Business --"
-        || IsBlank(Dropdown1.Selected.Value),
-    DisplayMode.Disabled,
-    DisplayMode.Edit
-)
+    !Checkbox1.Value,
+        Notify("Please confirm that you completed the training.", NotificationType.Error),
 
-Notify(
-    "Your attestation has been successfully submitted.",
-    NotificationType.Success,
-    3000
-);
+    !Checkbox2.Value,
+        Notify("Please confirm that you read and agree to the User Agreement.", NotificationType.Error),
+
+    Dropdown1.Selected.Value = "-- Select Line of Business --" || IsBlank(Dropdown1.Selected.Value),
+        Notify("Please select your Line of Business.", NotificationType.Error),
+
+    /* If everything is valid → Submit success notification */
+    Notify(
+        "Your attestation has been successfully submitted.",
+        NotificationType.Success
+    )
+)
