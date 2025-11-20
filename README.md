@@ -13,10 +13,10 @@ Patch(
     {
         Title: txtUserName.Text,
         Email: txtUserEmail.Text,
-        LineofBusiness: Dropdown1.Selected.Value,
+        Line_x0020_of_x0020_Business: Dropdown1.Selected.Value,
         TrainingCompleted: Checkbox1.Value,
-        AttestedtoAgreement: Checkbox2.Value,
-        Date_x0020__x0026__x0020_Time: Now()
+        AttestedToAgreement: Checkbox2.Value,
+        SubmittedOn: Now()
     }
 );
 
@@ -25,4 +25,3 @@ Notify(
     NotificationType.Success,
     3000
 );
-
