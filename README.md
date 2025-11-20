@@ -11,14 +11,18 @@ Patch(
     'Rahona Power BI Copilot Attestation',
     Defaults('Rahona Power BI Copilot Attestation'),
     {
-        Title: TextInput1.Text,             // Replace with your actual User Name input name
-        Email: TextInput2.Text,             // Replace with your actual Email input name
-        'Line of Business': Dropdown1.Selected.Value,
-        'Training Completed': Checkbox1.Value,
-        'Attested to Agreement': Checkbox2.Value,
-        'Date & Time': Now()               // Ensure SharePoint column is named "Date & Time" or "Date"
+        Title: txtUserName.Text,
+        Email: txtUserEmail.Text,
+        LineofBusiness: Dropdown1.Selected.Value,
+        TrainingCompleted: Checkbox1.Value,
+        AttestedtoAgreement: Checkbox2.Value,
+        Date_x0020__x0026__x0020_Time: Now()
     }
 );
-Notify("Your attestation has been successfully submitted.", NotificationType.Success, 3000);
 
+Notify(
+    "Your attestation has been successfully submitted.",
+    NotificationType.Success,
+    3000
+);
 
