@@ -8,15 +8,15 @@ MC140/MC140 is a ✨ special ✨ repository because its `README.md` (this file) 
 You can click the Preview link to take a look at your changes.
 --->
 Patch(
-    'Power BI Copilot Attestations',
-    Defaults('Power BI Copilot Attestations'),
+    'Rahona Power BI Copilot Attestation',
+    Defaults('Rahona Power BI Copilot Attestation'),
     {
         Title: txtUserName.Text,
         Email: txtUserEmail.Text,
-        LineOfBusiness: Dropdown1.Selected.Value,
-        TrainingCompleted: Checkbox1.Value,
-        AgreementAccepted: Checkbox2.Value,
-        SubmittedOn: Now()
+        Line_x0020_of_x0020_Business: Dropdown1.Selected.Value,
+        Training_x0020_Completed: Checkbox1.Value,
+        Attested_x0020_to_x0020_Agreement: Checkbox2.Value,
+        Date_x0020__x0026__x0020_Time: Now()
     }
 );
 
