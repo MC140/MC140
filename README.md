@@ -25,3 +25,21 @@ Notify(
     NotificationType.Success,
     3000
 );
+
+Patch(
+    'Rahona Power BI Copilot Attestation',
+    Defaults('Rahona Power BI Copilot Attestation'),
+    {
+        Title: User().FullName,
+        Email: User().Email,
+        'Line of Business': Dropdown1.Selected.Value,
+        'Training Completed': Checkbox1.Value,
+        'Attested to Agreement': Checkbox2.Value,
+        'Date & Time': Now()
+    }
+);
+Notify(
+    "Your attestation has been successfully submitted.",
+    NotificationType.Success,
+    3000
+);
