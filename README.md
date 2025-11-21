@@ -8,6 +8,8 @@ MC140/MC140 is a ✨ special ✨ repository because its `README.md` (this file) 
 You can click the Preview link to take a look at your changes.
 --->
 
+"""" 
+/// 
 Office365Outlook.SendEmailV2(
     User().Email,
     "Confirmation: Power BI Copilot Attestation Submitted",
@@ -20,3 +22,5 @@ Office365Outlook.SendEmailV2(
     "<b>Rahona Power BI Center of Excellence</b>",
     {IsHtml: true}
 )
+\\\
+""""
