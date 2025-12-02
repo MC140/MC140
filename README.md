@@ -15,6 +15,6 @@ VAR SelectedUser = SELECTEDVALUE('UserTable'[UserID])
 RETURN
 IF(
     ISBLANK(SelectedUser), 
-    BaseURL, -- If no user is selected, just go to the report without filters
+    BaseURL,  -- If no user is selected, open the report without filters
     BaseURL & "?filter=TransactionsTable/UserID eq '" & SelectedUser & "'"
 )
