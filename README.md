@@ -18,3 +18,19 @@ IF(
     BaseURL,  -- If no user is selected, open the report without filters
     BaseURL & "?filter=TransactionsTable/UserID eq '" & SelectedUser & "'"
 )
+
+TransactionReportLink = 
+VAR BaseURL = "[https://app.powerbi.com/groups/me/reports/xxxx-xxxx-xxxx/ReportSection](https://app.powerbi.com/groups/me/reports/xxxx-xxxx-xxxx/ReportSection)"
+VAR SelectedUser = SELECTEDVALUE('UserTable'[UserID])
+
+RETURN
+IF(
+    ISBLANK(SelectedUser), 
+    
+    -- Scenario 1: No user selected. Return base URL (or link to a landing page).
+    BaseURL, 
+    
+    -- Scenario 2: User selected. Append query string parameter.
+    -- Syntax: ?filter=TableName/ColumnName eq 'Value'
+    BaseURL & "?filter=TransactionsTable/UserID eq '" & SelectedUser & "'"
+)
