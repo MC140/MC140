@@ -7,6 +7,94 @@
 MC140/MC140 is a ✨ special ✨ repository because its `README.md` (this file) appears on your GitHub profile.
 You can click the Preview link to take a look at your changes.
 --->
+# Power BI Center of Excellence – Semantic Model Assessment
+
+This checklist is used by the Power BI Center of Excellence (CoE) to assess semantic models
+before enabling refresh, performance tuning, or production deployment.
+
+The objective is to ensure models are scalable, performant, secure, and aligned with
+enterprise Power BI and Synapse-first guardrails.
+
+---
+
+## Status Legend
+
+| Status | Meaning |
+|------|--------|
+| Green | Meets CoE standard; no action required |
+| Yellow | Acceptable but improvement recommended |
+| Red | Guardrail violation; must be fixed before approval |
+
+---
+
+## Semantic Model Assessment Checklist
+
+| Assessment Area | What Is Checked | Status (Green / Yellow / Red) | CoE Comments / Required Action |
+|----------------|----------------|-------------------------------|--------------------------------|
+| Upstream-first transformations | Heavy joins, aggregations, and business logic handled in Synapse (AZ), not in Power BI |  |  |
+| Approved data source only | Dataset uses only AZ Synapse as the data source (no Excel, SharePoint, CSV, or local files) |  |  |
+| Star schema design | Model follows fact and dimension structure with single-direction relationships |  |  |
+| Fact table grain defined | Fact table has one clear and documented grain |  |  |
+| Mixed grain avoided | Fact tables do not contain columns at different levels of granularity |  |  |
+| Many-to-many relationships controlled | No accidental many-to-many relationships; bridge tables used intentionally |  |  |
+| Relationship cardinality correct | Relationships use correct cardinality and active relationships only |  |  |
+| Bi-directional filters avoided | Cross-filter direction is single unless explicitly justified |  |  |
+| Auto Date/Time disabled | Auto date/time feature is disabled in Power BI |  |  |
+| Single enterprise Date table | One shared Date table is used and marked as Date table |  |  |
+| Calculated columns minimized | Calculated columns used only when unavoidable |  |  |
+| Measures preferred over columns | Business logic implemented using DAX measures, not calculated columns |  |  |
+| Iterator functions controlled | Limited use of SUMX, FILTER, ADDCOLUMNS on large fact tables |  |  |
+| FILTER usage optimized | FILTER is not used where CALCULATE filters would suffice |  |  |
+| ATTR and COUNTD avoided | ATTR and COUNTD are not used unless strictly required |  |  |
+| 10-second performance rule | Key report pages respond within approximately 10 seconds |  |  |
+| Visual density optimized | Dashboards do not contain excessive visuals or large tables |  |  |
+| Default landing state optimized | Report landing page does not load full dataset by default |  |  |
+| Column pruning applied | Only required columns are loaded into the semantic model |  |  |
+| Correct data types | Columns use appropriate data types (dates, numerics, IDs) |  |  |
+| High-cardinality columns controlled | GUIDs and long text columns are not stored in fact tables |  |  |
+| Incremental refresh strategy | Incremental refresh is configured where historical data exists |  |  |
+| Refresh duration acceptable | Dataset refresh completes consistently without timeouts |  |  |
+| Query folding preserved | Power Query steps fold back to Synapse |  |  |
+| Dataset size controlled | Dataset memory size is within acceptable enterprise limits |  |  |
+| Row-Level Security (RLS) implemented | RLS uses AD groups and is tested in Power BI Service |  |  |
+| RLS performance validated | RLS does not cause significant performance degradation |  |  |
+| Model documentation present | Measures, tables, and columns include descriptions |  |  |
+| Naming standards followed | Business-friendly and consistent naming conventions applied |  |  |
+| Measures organization | Measures are grouped in dedicated tables or folders |  |  |
+| Deployment pipeline readiness | Dataset contains no hardcoded environment-specific values |  |  |
+| Gateway and connectivity validated | Dataset connects successfully through approved gateway |  |  |
+| Ownership and support defined | Dataset owner and support contact are documented |  |  |
+
+---
+
+## Assessment Summary
+
+| Metric | Value |
+|------|------|
+| Total Rows Assessed |  |
+| Green |  |
+| Yellow |  |
+| Red |  |
+
+---
+
+## CoE Decision
+
+| Decision | Notes |
+|--------|------|
+| Approve |  |
+| Approve with Fixes |  |
+| Block |  |
+
+---
+
+## Notes and Expectations
+
+- All Red items must be resolved before production refresh is enabled.
+- Yellow items should be addressed in the next development iteration.
+- This assessment aligns with enterprise Power BI best practices and Synapse-first architecture.
+- Power BI is not an ETL tool; all heavy data processing must occur upstream.
+
 
 Assessment Area (Best Practice / Guardrail / Watchout)
 What to check (signals)
