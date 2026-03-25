@@ -7,53 +7,47 @@
 MC140/MC140 is a ✨ special ✨ repository because its `README.md` (this file) appears on your GitHub profile.
 You can click the Preview link to take a look at your changes.
 --->
+
 let
-    // Reference our master file list
     Source = Source_AllFiles,
 
-    // Filter to WorkspacesScan files only
     FilterFiles = Table.SelectRows(Source, each 
         Text.Contains([Name], "WorkspacesScan") and 
         not Text.Contains([Name], "MisConfig")),
 
-    // Add SnapshotDate from filename
     AddSnapshotDate = Table.AddColumn(FilterFiles, "SnapshotDate", 
         each fnGetSnapshotDate([Name]), type date),
 
-    // Parse each file's JSON
     AddParsedJSON = Table.AddColumn(AddSnapshotDate, "ParsedJSON", each 
         let
-            // Read CSV content
-            RawCSV    = Csv.Document([Content], 
-                            [Delimiter=",", Encoding=65001, 
-                             QuoteStyle=QuoteStyle.None]),
-            Promoted  = Table.PromoteHeaders(RawCSV, 
-                            [PromoteAllScalars=true]),
+            RawCSV   = Csv.Document([Content], 
+                           [Delimiter=",", Encoding=65001, 
+                            QuoteStyle=QuoteStyle.None]),
+            Promoted = Table.PromoteHeaders(RawCSV, 
+                           [PromoteAllScalars=true]),
 
-            // Get all values from "Scan Data" column as a list
             DataList  = Table.Column(Promoted, "Scan Data"),
-
-            // Remove nulls and empty rows
             CleanList = List.Select(DataList, each 
-                            _ <> null and _ <> ""),
+                            _ <> null and Text.Trim(_) <> ""),
 
-            // Concatenate all lines back into one JSON string
-            JSONText  = Text.Combine(CleanList, "#(lf)"),
+            // Join all lines back into one text block
+            JSONText = Text.Combine(CleanList, "#(lf)"),
 
-            // Parse — if top level is array use as-is
-            // If top level is a record (single workspace) wrap in list
-            Parsed    = Json.Document(JSONText),
-            AsList    = if Value.Is(Parsed, type list) then Parsed
-                        else {Parsed}
+            // THE FIX: multiple JSON objects sit back to back
+            // Replace }newline{ boundary with },{ 
+            // then wrap entire thing in [ ] to make valid array
+            Step1 = Text.Replace(JSONText, 
+                        "}" & "#(cr)#(lf)" & "{", "},{"),
+            Step2 = Text.Replace(Step1, 
+                        "}" & "#(lf)" & "{", "},{"),
+            WrappedJSON = "[" & Step2 & "]",
+
+            Parsed = Json.Document(WrappedJSON)
         in
-            AsList
+            Parsed
     ),
 
-    // Keep only what we need
     KeepCols = Table.SelectColumns(AddParsedJSON, 
                    {"Name", "SnapshotDate", "ParsedJSON"})
-
 in
     KeepCols
-
-
