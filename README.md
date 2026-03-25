@@ -7,60 +7,63 @@
 MC140/MC140 is a ✨ special ✨ repository because its `README.md` (this file) appears on your GitHub profile.
 You can click the Preview link to take a look at your changes.
 --->
-        
+    
 let
-    Source = Source_AllFiles,
+    Source = Stg_WorkspacesScan_Base,
 
-    FilterFiles = Table.SelectRows(Source, each
-        Text.Contains([Name], "WorkspacesScan") and
-        not Text.Contains([Name], "MisConfig")),
+    // Expand each file's list into individual workspace rows
+    ExpandList = Table.ExpandListColumn(Source, "ParsedJSON"),
 
-    AddSnapshotDate = Table.AddColumn(FilterFiles, "SnapshotDate",
-        each fnGetSnapshotDate([Name]), type date),
-
-    AddParsedJSON = Table.AddColumn(AddSnapshotDate, "ParsedJSON", each
-        let
-            RawCSV   = Csv.Document([Content],
-                           [Delimiter = ",", Encoding = 65001,
-                            QuoteStyle = QuoteStyle.None]),
-            Promoted = Table.PromoteHeaders(RawCSV,
-                           [PromoteAllScalars = true]),
-
-            // Get all lines, remove nulls and blanks
-            LineList  = Table.Column(Promoted, "Scan Data"),
-            NonEmpty  = List.Select(LineList, 
-                            each _ <> null and Text.Trim(_) <> ""),
-
-            // Join with a unique pipe separator
-            Joined = Text.Combine(NonEmpty, "|~|"),
-
-            // Every top-level workspace ends with a lone "}" 
-            // followed by a lone "{" for the next one.
-            // Pattern in joined text:  }|~|{
-            // Replace that boundary with a unique SPLIT marker
-            Marked  = Text.Replace(Joined, "}|~|{", "}|||SPLIT|||{"),
-
-            // Split into individual workspace text blocks
-            Blocks  = Text.Split(Marked, "|||SPLIT|||"),
-
-            // Each block is now a valid JSON object — parse individually
-            Parsed  = List.Transform(Blocks, each 
-                        let
-                            // Restore original spacing inside each block
-                            Clean = Text.Replace(_, "|~|", " ")
-                        in
-                            try Json.Document(Clean) 
-                            otherwise null
-                      ),
-
-            // Remove any nulls from failed parses
-            Final = List.Select(Parsed, each _ <> null)
-        in
-            Final
+    // Expand workspace-level fields from each record
+    ExpandFields = Table.ExpandRecordColumn(
+        ExpandList, "ParsedJSON",
+        {"id", "name", "type", "state",
+         "isOnDedicatedCapacity", "capacityId",
+         "defaultDatasetStorageFormat"},
+        {"WorkspaceId", "WorkspaceName", "WorkspaceType",
+         "WorkspaceState", "IsOnDedicatedCapacity",
+         "CapacityId", "DefaultStorageFormat"}
     ),
 
-    KeepCols = Table.SelectColumns(AddParsedJSON,
-                   {"Name", "SnapshotDate", "ParsedJSON"})
-in
-    KeepCols
+    // Remove nulls
+    RemoveNulls = Table.SelectRows(ExpandFields,
+                      each [WorkspaceId] <> null and
+                           [WorkspaceId] <> ""),
 
+    // DEDUP: one row per WorkspaceId keeping most recent snapshot
+    MaxDatePerWS = Table.Group(RemoveNulls, {"WorkspaceId"}, {
+        {"WorkspaceName",         each List.Last(List.Sort([WorkspaceName])),         type text},
+        {"WorkspaceType",         each List.Last(List.Sort([WorkspaceType])),         type text},
+        {"WorkspaceState",        each List.Last(List.Sort([WorkspaceState])),        type text},
+        {"IsOnDedicatedCapacity", each List.Last(List.Sort(
+                                      List.Transform([IsOnDedicatedCapacity], 
+                                          each Text.From(_)))),                       type text},
+        {"CapacityId",            each List.Last(List.Sort([CapacityId])),            type text},
+        {"DefaultStorageFormat",  each List.Last(List.Sort([DefaultStorageFormat])), type text},
+        {"LastSeenDate",          each List.Max([SnapshotDate]),                      type date}
+    }),
+
+    // IsActive = appeared in the latest snapshot file
+    LatestSnapshotDate = List.Max(RemoveNulls[SnapshotDate]),
+
+    // Get WorkspaceIds in the latest snapshot
+    LatestWSIds = Table.SelectRows(RemoveNulls, 
+                      each [SnapshotDate] = LatestSnapshotDate)[WorkspaceId],
+
+    AddIsActive = Table.AddColumn(MaxDatePerWS, "IsActive",
+        each List.Contains(LatestWSIds, [WorkspaceId]), type logical),
+
+    // Final types
+    SetTypes = Table.TransformColumnTypes(AddIsActive, {
+        {"WorkspaceId",           type text},
+        {"WorkspaceName",         type text},
+        {"WorkspaceType",         type text},
+        {"WorkspaceState",        type text},
+        {"CapacityId",            type text},
+        {"DefaultStorageFormat",  type text},
+        {"LastSeenDate",          type date},
+        {"IsActive",              type logical}
+    })
+
+in
+    SetTypes
