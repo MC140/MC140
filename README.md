@@ -7,41 +7,8 @@
 MC140/MC140 is a ✨ special ✨ repository because its `README.md` (this file) appears on your GitHub profile.
 You can click the Preview link to take a look at your changes.
 --->
+        
 let
-    // Helper: splits raw line list into individual workspace JSON strings
-    // by counting opening/closing braces — works regardless of line endings
-    SplitIntoObjects = (lineList as list) as list =>
-        let
-            NonEmpty = List.Select(lineList, 
-                           each Text.Trim(_) <> ""),
-            Result = List.Accumulate(
-                NonEmpty,
-                [objs = {}, cur = "", depth = 0],
-                (state, line) =>
-                let
-                    T      = Text.Trim(line),
-                    Opens  = Text.Length(T) - 
-                             Text.Length(Text.Remove(T, "{")),
-                    Closes = Text.Length(T) - 
-                             Text.Length(Text.Remove(T, "}")),
-                    NewDepth  = state[depth] + Opens - Closes,
-                    NewCur    = if state[cur] = "" then T
-                                else state[cur] & " " & T,
-                    IsDone    = NewDepth = 0 and 
-                                Text.Length(Text.Trim(NewCur)) > 2,
-                    NewObjs   = if IsDone 
-                                then state[objs] & {NewCur}
-                                else state[objs],
-                    FinalCur  = if IsDone then "" else NewCur
-                in
-                    [objs  = NewObjs, 
-                     cur   = FinalCur, 
-                     depth = NewDepth]
-            )
-        in
-            Result[objs],
-
-    // Main query
     Source = Source_AllFiles,
 
     FilterFiles = Table.SelectRows(Source, each
@@ -59,18 +26,37 @@ let
             Promoted = Table.PromoteHeaders(RawCSV,
                            [PromoteAllScalars = true]),
 
-            // Get all lines from the Scan Data column
-            LineList = Table.Column(Promoted, "Scan Data"),
+            // Get all lines, remove nulls and blanks
+            LineList  = Table.Column(Promoted, "Scan Data"),
+            NonEmpty  = List.Select(LineList, 
+                            each _ <> null and Text.Trim(_) <> ""),
 
-            // Split into individual workspace JSON strings
-            // by counting braces
-            ObjectStrings = SplitIntoObjects(LineList),
+            // Join with a unique pipe separator
+            Joined = Text.Combine(NonEmpty, "|~|"),
 
-            // Parse each string individually and collect into list
-            ParsedList = List.Transform(ObjectStrings,
-                             each Json.Document(_))
+            // Every top-level workspace ends with a lone "}" 
+            // followed by a lone "{" for the next one.
+            // Pattern in joined text:  }|~|{
+            // Replace that boundary with a unique SPLIT marker
+            Marked  = Text.Replace(Joined, "}|~|{", "}|||SPLIT|||{"),
+
+            // Split into individual workspace text blocks
+            Blocks  = Text.Split(Marked, "|||SPLIT|||"),
+
+            // Each block is now a valid JSON object — parse individually
+            Parsed  = List.Transform(Blocks, each 
+                        let
+                            // Restore original spacing inside each block
+                            Clean = Text.Replace(_, "|~|", " ")
+                        in
+                            try Json.Document(Clean) 
+                            otherwise null
+                      ),
+
+            // Remove any nulls from failed parses
+            Final = List.Select(Parsed, each _ <> null)
         in
-            ParsedList
+            Final
     ),
 
     KeepCols = Table.SelectColumns(AddParsedJSON,
