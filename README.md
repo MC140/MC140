@@ -8,13 +8,14 @@ MC140/MC140 is a ✨ special ✨ repository because its `README.md` (this file) 
 You can click the Preview link to take a look at your changes.
 --->
     
+
 let
     Source = Stg_WorkspacesScan_Base,
 
-    // Expand each file's list into individual workspace rows
+    // Expand list into one row per workspace per snapshot
     ExpandList = Table.ExpandListColumn(Source, "ParsedJSON"),
 
-    // Expand workspace-level fields from each record
+    // Expand workspace-level fields
     ExpandFields = Table.ExpandRecordColumn(
         ExpandList, "ParsedJSON",
         {"id", "name", "type", "state",
@@ -25,40 +26,48 @@ let
          "CapacityId", "DefaultStorageFormat"}
     ),
 
-    // Remove nulls
+    // Remove rows with no WorkspaceId
     RemoveNulls = Table.SelectRows(ExpandFields,
                       each [WorkspaceId] <> null and
                            [WorkspaceId] <> ""),
 
-    // DEDUP: one row per WorkspaceId keeping most recent snapshot
-    MaxDatePerWS = Table.Group(RemoveNulls, {"WorkspaceId"}, {
-        {"WorkspaceName",         each List.Last(List.Sort([WorkspaceName])),         type text},
-        {"WorkspaceType",         each List.Last(List.Sort([WorkspaceType])),         type text},
-        {"WorkspaceState",        each List.Last(List.Sort([WorkspaceState])),        type text},
-        {"IsOnDedicatedCapacity", each List.Last(List.Sort(
-                                      List.Transform([IsOnDedicatedCapacity], 
-                                          each Text.From(_)))),                       type text},
-        {"CapacityId",            each List.Last(List.Sort([CapacityId])),            type text},
-        {"DefaultStorageFormat",  each List.Last(List.Sort([DefaultStorageFormat])), type text},
-        {"LastSeenDate",          each List.Max([SnapshotDate]),                      type date}
-    }),
+    // Sort by WorkspaceId then SnapshotDate descending
+    Sorted = Table.Sort(RemoveNulls, {
+                 {"WorkspaceId",   Order.Ascending},
+                 {"SnapshotDate",  Order.Descending}
+             }),
 
-    // IsActive = appeared in the latest snapshot file
-    LatestSnapshotDate = List.Max(RemoveNulls[SnapshotDate]),
+    // Keep only the first row per WorkspaceId
+    // (which is the most recent due to sort above)
+    Deduped = Table.Buffer(
+                  Table.Distinct(Sorted, {"WorkspaceId"})
+              ),
 
-    // Get WorkspaceIds in the latest snapshot
-    LatestWSIds = Table.SelectRows(RemoveNulls, 
-                      each [SnapshotDate] = LatestSnapshotDate)[WorkspaceId],
+    // Rename SnapshotDate to LastSeenDate
+    Renamed = Table.RenameColumns(Deduped, 
+                  {{"SnapshotDate", "LastSeenDate"}}),
 
-    AddIsActive = Table.AddColumn(MaxDatePerWS, "IsActive",
-        each List.Contains(LatestWSIds, [WorkspaceId]), type logical),
+    // IsActive flag
+    LatestDate = List.Max(RemoveNulls[SnapshotDate]),
+    LatestIds  = List.Distinct(
+                     Table.SelectRows(RemoveNulls,
+                         each [SnapshotDate] = LatestDate
+                     )[WorkspaceId]
+                 ),
 
-    // Final types
-    SetTypes = Table.TransformColumnTypes(AddIsActive, {
+    AddIsActive = Table.AddColumn(Renamed, "IsActive",
+                      each List.Contains(LatestIds, [WorkspaceId]),
+                      type logical),
+
+    // Drop the file Name column
+    DropName = Table.RemoveColumns(AddIsActive, {"Name"}),
+
+    SetTypes = Table.TransformColumnTypes(DropName, {
         {"WorkspaceId",           type text},
         {"WorkspaceName",         type text},
         {"WorkspaceType",         type text},
         {"WorkspaceState",        type text},
+        {"IsOnDedicatedCapacity", type text},
         {"CapacityId",            type text},
         {"DefaultStorageFormat",  type text},
         {"LastSeenDate",          type date},
