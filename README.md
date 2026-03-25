@@ -8,71 +8,45 @@ MC140/MC140 is a ✨ special ✨ repository because its `README.md` (this file) 
 You can click the Preview link to take a look at your changes.
 --->
     
-
 let
-    Source = Stg_WorkspacesScan_Base,
+    Source = Source_AllFiles,
 
-    // Expand list into one row per workspace per snapshot
-    ExpandList = Table.ExpandListColumn(Source, "ParsedJSON"),
+    FilterFiles = Table.SelectRows(Source, each
+        Text.Contains([Name], "WorkspacesScan") and
+        not Text.Contains([Name], "MisConfig")),
 
-    // Expand workspace-level fields
-    ExpandFields = Table.ExpandRecordColumn(
-        ExpandList, "ParsedJSON",
-        {"id", "name", "type", "state",
-         "isOnDedicatedCapacity", "capacityId",
-         "defaultDatasetStorageFormat"},
-        {"WorkspaceId", "WorkspaceName", "WorkspaceType",
-         "WorkspaceState", "IsOnDedicatedCapacity",
-         "CapacityId", "DefaultStorageFormat"}
+    AddSnapshotDate = Table.AddColumn(FilterFiles, "SnapshotDate",
+        each fnGetSnapshotDate([Name]), type date),
+
+    AddParsedJSON = Table.AddColumn(AddSnapshotDate, "ParsedJSON", each
+        let
+            RawCSV   = Csv.Document([Content],
+                           [Delimiter = ",", Encoding = 65001,
+                            QuoteStyle = QuoteStyle.None]),
+            Promoted = Table.PromoteHeaders(RawCSV,
+                           [PromoteAllScalars = true]),
+
+            LineList = Table.Column(Promoted, "Scan Data"),
+            NonEmpty = List.Select(LineList,
+                           each _ <> null and Text.Trim(_) <> ""),
+
+            // Join all lines back into one string
+            Joined = Text.Combine(NonEmpty, " "),
+
+            // Parse directly — file is already valid JSON
+            Parsed = Json.Document(Joined),
+
+            // Normalise: whether it's a record or a list,
+            // always return a list of records
+            AsList = if Value.Is(Parsed, type list) 
+                     then Parsed 
+                     else {Parsed}
+        in
+            AsList
     ),
 
-    // Remove rows with no WorkspaceId
-    RemoveNulls = Table.SelectRows(ExpandFields,
-                      each [WorkspaceId] <> null and
-                           [WorkspaceId] <> ""),
-
-    // Sort by WorkspaceId then SnapshotDate descending
-    Sorted = Table.Sort(RemoveNulls, {
-                 {"WorkspaceId",   Order.Ascending},
-                 {"SnapshotDate",  Order.Descending}
-             }),
-
-    // Keep only the first row per WorkspaceId
-    // (which is the most recent due to sort above)
-    Deduped = Table.Buffer(
-                  Table.Distinct(Sorted, {"WorkspaceId"})
-              ),
-
-    // Rename SnapshotDate to LastSeenDate
-    Renamed = Table.RenameColumns(Deduped, 
-                  {{"SnapshotDate", "LastSeenDate"}}),
-
-    // IsActive flag
-    LatestDate = List.Max(RemoveNulls[SnapshotDate]),
-    LatestIds  = List.Distinct(
-                     Table.SelectRows(RemoveNulls,
-                         each [SnapshotDate] = LatestDate
-                     )[WorkspaceId]
-                 ),
-
-    AddIsActive = Table.AddColumn(Renamed, "IsActive",
-                      each List.Contains(LatestIds, [WorkspaceId]),
-                      type logical),
-
-    // Drop the file Name column
-    DropName = Table.RemoveColumns(AddIsActive, {"Name"}),
-
-    SetTypes = Table.TransformColumnTypes(DropName, {
-        {"WorkspaceId",           type text},
-        {"WorkspaceName",         type text},
-        {"WorkspaceType",         type text},
-        {"WorkspaceState",        type text},
-        {"IsOnDedicatedCapacity", type text},
-        {"CapacityId",            type text},
-        {"DefaultStorageFormat",  type text},
-        {"LastSeenDate",          type date},
-        {"IsActive",              type logical}
-    })
-
+    KeepCols = Table.SelectColumns(AddParsedJSON,
+                   {"Name", "SnapshotDate", "ParsedJSON"})
 in
-    SetTypes
+    KeepCols
+
