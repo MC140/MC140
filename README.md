@@ -20,27 +20,17 @@ let
 
     AddParsedJSON = Table.AddColumn(AddSnapshotDate, "ParsedJSON", each
         let
-            RawCSV   = Csv.Document([Content],
-                           [Delimiter = ",", Encoding = 65001,
-                            QuoteStyle = QuoteStyle.None]),
-            Promoted = Table.PromoteHeaders(RawCSV,
-                           [PromoteAllScalars = true]),
+            // Read as raw text — NOT as CSV
+            // This preserves all commas inside JSON values
+            RawText  = Text.FromBinary([Content], TextEncoding.Utf8),
 
-            LineList = Table.Column(Promoted, "Scan Data"),
-            NonEmpty = List.Select(LineList,
-                           each _ <> null and Text.Trim(_) <> ""),
+            // Parse directly
+            Parsed   = Json.Document(RawText),
 
-            // Join all lines back into one string
-            Joined = Text.Combine(NonEmpty, " "),
-
-            // Parse directly — file is already valid JSON
-            Parsed = Json.Document(Joined),
-
-            // Normalise: whether it's a record or a list,
-            // always return a list of records
-            AsList = if Value.Is(Parsed, type list) 
-                     then Parsed 
-                     else {Parsed}
+            // Always return a list
+            AsList   = if Value.Is(Parsed, type list)
+                       then Parsed
+                       else {Parsed}
         in
             AsList
     ),
