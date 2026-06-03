@@ -1,5 +1,4 @@
 - 👋 Hi, I’m Manohar Chekka
-- 👀 I’m Data Engineer
 - 📫 Reach me at : manoharch0698@gmail.com
 
 
@@ -8,8 +7,3 @@ MC140/MC140 is a ✨ special ✨ repository because its `README.md` (this file) 
 You can click the Preview link to take a look at your changes.
 --->
 
-ColorBackground = 
-"#FFFFFF" & IF(
-    ISBLANK(SELECTEDVALUE('perso_tam9730 cust_dim'[cust_intrl_id])),
-    "00"
-)
