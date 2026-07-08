@@ -7,26 +7,44 @@ MC140/MC140 is a ✨ special ✨ repository because its `README.md` (this file) 
 You can click the Preview link to take a look at your changes.
 --->
 
-
 let
     Source = DimWorkspaceScanHistory,
 
     #"Kept Columns" = Table.SelectColumns(
         Source,
-        {"WorkspaceID", "WorkspaceName", "SnapshotDate", "Users"}
+        {"WorkspaceID", "WorkspaceName", "SnapshotDate", "LoadDate",
+         "Reports", "Dashboards", "Datasets", "Dataflows",
+         "Datamarts", "Users", "Folders"}
     ),
 
-    #"Expanded Users" = Table.ExpandListColumn(#"Kept Columns", "Users"),
+    // Stack the 7 list columns into EntityType + Item pairs
+    #"Unpivoted" = Table.UnpivotOtherColumns(
+        #"Kept Columns",
+        {"WorkspaceID", "WorkspaceName", "SnapshotDate", "LoadDate"},
+        "EntityType", "Item"
+    ),
 
-    #"Valid Users" = Table.SelectRows(#"Expanded Users", each [Users] is record),
+    // Each Item is a list of records -> one row per record
+    #"Expanded Items" = Table.ExpandListColumn(#"Unpivoted", "Item"),
 
-    #"Expanded User Record" = Table.ExpandRecordColumn(
-        #"Expanded Users" , "Users",
-        {"groupUserAccessRight", "emailAddress", "displayName",
-         "identifier", "graphId", "principalType", "userType"},
-        {"AccessRight", "EmailAddress", "DisplayName",
-         "Identifier", "GraphId", "PrincipalType", "UserType"}
+    #"Valid Items" = Table.SelectRows(#"Expanded Items", each [Item] is record),
+
+    // Pull out the union of fields across all entity types.
+    // Fields that don't apply to a given entity just come back null.
+    #"Expanded Item Record" = Table.ExpandRecordColumn(
+        #"Valid Items", "Item",
+        {"id", "name", "reportType", "datasetId",
+         "createdDateTime", "modifiedDateTime", "createdBy", "modifiedBy",
+         "configuredBy", "targetStorageMode", "contentProviderType", "createdDate",
+         "groupUserAccessRight", "displayName", "emailAddress",
+         "identifier", "principalType", "userType", "folderId"},
+        {"ItemID", "ItemName", "ReportType", "DatasetId",
+         "CreatedDateTime", "ModifiedDateTime", "CreatedBy", "ModifiedBy",
+         "ConfiguredBy", "TargetStorageMode", "ContentProviderType", "CreatedDate",
+         "AccessRight", "DisplayName", "EmailAddress",
+         "Identifier", "PrincipalType", "UserType", "FolderId"}
     )
 in
-    #"Expanded User Record"
+    #"Expanded Item Record"
+
 
