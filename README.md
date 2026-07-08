@@ -6,30 +6,22 @@
 MC140/MC140 is a ✨ special ✨ repository because its `README.md` (this file) appears on your GitHub profile.
 You can click the Preview link to take a look at your changes.
 --->
-
 let
-    Source = DimWorkspaceScanHistory,
-
-    #"Removed List Columns" = Table.SelectColumns(
-        Source,
-        {"WorkspaceID", "WorkspaceName", "WorkspaceType", "WorkspaceState",
-         "IsOnDedicatedCapacity", "CapacityId", "DefaultDatasetStorageFormat",
-         "SnapshotDate", "LoadDate", "SourceFile"}
-    ),
+    Source = FactWorkspaceUsers,
 
     LatestSnapshot =
-        List.Max(#"Removed List Columns"[SnapshotDate]),
+        List.Max(Source[SnapshotDate]),
 
     FilterLatest =
         Table.SelectRows(
-            #"Removed List Columns",
+            Source,
             each [SnapshotDate] = LatestSnapshot
         ),
 
     RemoveDuplicates =
         Table.Distinct(
             FilterLatest,
-            {"WorkspaceID"}
+            {"WorkspaceID", "Identifier", "AccessRight"}
         )
 in
     RemoveDuplicates
