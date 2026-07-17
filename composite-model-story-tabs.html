@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<title>Composite Model — How We Got Here &amp; What Copilot Pays For It</title>
+<style>
+  :root{
+    color-scheme: light;
+    --ink:#22303e;
+    --muted:#64748b;
+    --track:#dbe4ee;
+    --copilot:#6b4fc8;
+    --copilot-bg:#f3effd;
+    --modelA:#0f6cbd;
+    --modelA-bg:#eaf3fc;
+    --modelB:#b45d00;
+    --modelB-bg:#fdf3e4;
+    --trip:#c0392b;
+    --result:#148a52;
+    --card:#ffffff;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:#f2f6fb}
+  body{
+    font-family:"Segoe UI",-apple-system,Roboto,Arial,sans-serif;
+    color:var(--ink);
+    min-height:100vh;
+    background:linear-gradient(180deg,#f6f9fd 0%,#eef4fa 100%);
+    display:flex;flex-direction:column;align-items:center;
+    padding:30px 16px 60px;
+  }
+  h1{font-size:23px;font-weight:700;text-align:center;letter-spacing:-0.2px}
+  .sub{font-size:13.5px;color:var(--muted);text-align:center;margin-top:6px}
+
+  /* ---------- tabs ---------- */
+  .tabs{
+    display:flex;gap:6px;margin:22px 0 4px;
+    background:#e3ebf4;border-radius:24px;padding:5px;
+  }
+  .tabs button{
+    font-family:inherit;font-size:13.5px;font-weight:700;
+    border:none;border-radius:20px;
+    background:transparent;color:var(--muted);
+    padding:9px 22px;cursor:pointer;
+    transition:all .2s;
+  }
+  .tabs button.active{background:#fff;color:var(--modelA);box-shadow:0 2px 8px rgba(30,60,90,.12)}
+  .tabs button:focus-visible{outline:3px solid #9cc4e8;outline-offset:2px}
+  .panel{display:none;width:100%;flex-direction:column;align-items:center}
+  .panel.show{display:flex}
+
+  /* ================= TAB 1 — HOW WE GOT HERE ================= */
+  .story{width:100%;max-width:640px;margin-top:24px;position:relative}
+  svg.wires1{position:absolute;inset:0;width:100%;pointer-events:none;z-index:0}
+
+  .scard{
+    position:relative;z-index:1;
+    background:var(--card);
+    border:2px solid var(--track);
+    border-radius:14px;
+    padding:16px 22px;
+    margin:0 auto;
+    width:min(460px,100%);
+    box-shadow:0 3px 14px rgba(30,60,90,.07);
+  }
+  .scard .head{display:flex;align-items:center;gap:12px}
+  .scard .emoji{font-size:24px}
+  .scard .title{font-size:15px;font-weight:700}
+  .scard .body{font-size:12.5px;color:var(--muted);line-height:1.55;margin-top:7px}
+  .scard .body b{color:var(--ink)}
+  .scard.synapse{background:#eaf5fb;border-color:#5aa5d6}
+  .scard.synapse .title{color:#12699e}
+  .scard.mA{background:var(--modelA-bg);border-color:var(--modelA)}
+  .scard.mA .title{color:var(--modelA)}
+  .scard.mB{background:var(--modelB-bg);border-color:var(--modelB);border-style:dashed}
+  .scard.mB .title{color:var(--modelB)}
+  .devband{
+    display:flex;align-items:center;gap:8px;
+    width:min(460px,100%);margin:0 auto 8px;
+  }
+  .devband .pill{
+    font-size:11px;font-weight:800;letter-spacing:.6px;color:#fff;
+    padding:4px 12px;border-radius:12px;
+  }
+  .devband.a .pill{background:var(--modelA)}
+  .devband.b .pill{background:var(--modelB)}
+  .devband .who{font-size:12.5px;color:var(--muted);font-weight:650}
+  .sgap{height:74px}
+  .sgap.small{height:64px}
+  .stag{
+    display:inline-block;font-size:10px;font-weight:800;letter-spacing:.6px;
+    padding:3px 9px;border-radius:10px;color:#fff;margin-left:auto;
+  }
+  .stag.blue{background:var(--modelA)}
+  .stag.amber{background:var(--modelB)}
+  .keyfact{
+    width:min(460px,100%);margin:26px auto 0;
+    background:#fff;border:2px solid var(--trip);
+    border-radius:12px;padding:14px 18px;
+    box-shadow:0 3px 14px rgba(192,57,43,.12);
+  }
+  .keyfact h4{font-size:13px;font-weight:750;color:var(--trip);margin-bottom:5px}
+  .keyfact p{font-size:12.5px;line-height:1.6}
+
+  /* ================= TAB 2 — COPILOT JOURNEY ================= */
+  .controls{display:flex;gap:10px;margin:18px 0 6px;align-items:center;flex-wrap:wrap;justify-content:center}
+  .controls button{
+    font-family:inherit;font-size:13px;font-weight:650;
+    border:1.5px solid #c4d2e0;border-radius:20px;
+    background:#fff;color:var(--ink);
+    padding:8px 18px;cursor:pointer;transition:all .15s;
+  }
+  .controls button:hover{border-color:var(--modelA);color:var(--modelA)}
+  .controls button.primary{background:var(--modelA);border-color:var(--modelA);color:#fff}
+  .controls button.primary:hover{background:#0c5aa0;color:#fff}
+  .controls button:focus-visible{outline:3px solid #9cc4e8;outline-offset:2px}
+
+  .chips{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:10px 0 22px;max-width:900px}
+  .chip{
+    font-size:12px;font-weight:650;color:var(--muted);
+    background:#fff;border:1.5px solid var(--track);
+    border-radius:18px;padding:6px 14px;transition:all .25s;cursor:pointer;
+  }
+  .chip.active{color:#fff;border-color:transparent;transform:scale(1.05)}
+  .chip.active.c1,.chip.active.c2,.chip.active.c3{background:var(--modelB)}
+  .chip.active.c4{background:var(--trip)}
+  .chip.active.c5{background:var(--result)}
+  .chip.active.c6{background:var(--copilot)}
+
+  .caption{
+    min-height:46px;max-width:640px;text-align:center;
+    font-size:14px;line-height:1.5;color:var(--ink);
+    background:#fff;border:1.5px solid var(--track);border-radius:12px;
+    padding:11px 20px;margin-bottom:28px;
+    box-shadow:0 2px 10px rgba(30,60,90,.06);
+  }
+  .caption strong{font-weight:700}
+
+  .stage{position:relative;width:100%;max-width:640px}
+  svg.wires{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:0}
+  .card{
+    position:relative;z-index:1;
+    background:var(--card);
+    border:2px solid var(--track);
+    border-radius:14px;
+    padding:18px 22px;margin:0 auto;
+    width:min(440px,100%);
+    box-shadow:0 3px 14px rgba(30,60,90,.07);
+    transition:border-color .3s, box-shadow .3s, transform .3s;
+  }
+  .card.lit{transform:scale(1.02)}
+  .card .head{display:flex;align-items:center;gap:12px}
+  .card .emoji{font-size:26px}
+  .card .title{font-size:15.5px;font-weight:700}
+  .card .body{font-size:12.5px;color:var(--muted);line-height:1.55;margin-top:8px}
+  .card .body b{color:var(--ink)}
+  .card.user{border-color:#b9c7d6}
+  .card.user.lit{border-color:var(--modelB);box-shadow:0 4px 20px rgba(180,93,0,.25)}
+  .card.copilot{background:var(--copilot-bg)}
+  .card.copilot .title{color:var(--copilot)}
+  .card.copilot.lit{border-color:var(--copilot);box-shadow:0 4px 20px rgba(107,79,200,.28)}
+  .card.modelB{background:var(--modelB-bg);border-style:dashed}
+  .card.modelB .title{color:var(--modelB)}
+  .card.modelB.lit{border-color:var(--modelB);box-shadow:0 4px 20px rgba(180,93,0,.28)}
+  .card.modelA{background:var(--modelA-bg)}
+  .card.modelA .title{color:var(--modelA)}
+  .card.modelA.lit{border-color:var(--modelA);box-shadow:0 4px 20px rgba(15,108,189,.28)}
+  .tag{
+    display:inline-block;font-size:10px;font-weight:800;letter-spacing:.6px;
+    padding:3px 9px;border-radius:10px;color:#fff;margin-left:auto;
+  }
+  .tag.import{background:var(--modelA)}
+  .tag.composite{background:var(--modelB)}
+  .gap{height:86px}
+  .bubble{
+    position:absolute;z-index:2;
+    font-size:12px;font-weight:650;color:#fff;
+    padding:8px 15px;border-radius:16px;
+    max-width:280px;line-height:1.4;
+    opacity:0;transition:opacity .4s, transform .4s;
+    transform:translateY(6px);
+    box-shadow:0 3px 12px rgba(30,60,90,.18);
+  }
+  .bubble.show{opacity:1;transform:translateY(0)}
+  .bubble.q{background:var(--modelB);top:-14px;right:-8px}
+  .bubble.a{background:var(--result);top:-14px;left:-8px}
+  .dot{
+    position:absolute;z-index:3;
+    width:13px;height:13px;border-radius:50%;
+    margin-left:-6.5px;margin-top:-6.5px;opacity:0;
+    box-shadow:0 0 0 4px rgba(255,255,255,.65), 0 2px 6px rgba(0,0,0,.2);
+  }
+  .footer-note{
+    margin-top:32px;max-width:640px;width:100%;
+    background:#fff;border-left:5px solid var(--trip);
+    border-radius:0 12px 12px 0;padding:14px 20px;
+    box-shadow:0 2px 10px rgba(30,60,90,.06);
+  }
+  .footer-note h4{font-size:13px;font-weight:750;color:var(--trip);margin-bottom:5px}
+  .footer-note p{font-size:13px;line-height:1.6;color:var(--ink)}
+  @media (prefers-reduced-motion: reduce){
+    .card,.chip,.bubble{transition:none}
+  }
+</style>
+</head>
+<body>
+
+<h1>Composite Model over a Published Model</h1>
+<p class="sub">How the situation was created — and what every Copilot question pays for it</p>
+
+<div class="tabs" role="tablist">
+  <button id="tabBtn1" class="active" role="tab">1 · How we got here</button>
+  <button id="tabBtn2" role="tab">2 · A Copilot question's journey</button>
+</div>
+
+<!-- ==================== TAB 1 ==================== -->
+<div class="panel show" id="panel1">
+  <div class="story" id="story">
+    <svg class="wires1" id="wires1"></svg>
+
+    <!-- Developer A section -->
+    <div class="devband a">
+      <span class="pill">DEVELOPER A</span>
+      <span class="who">builds and publishes the original model</span>
+    </div>
+
+    <div class="scard synapse" id="s1">
+      <div class="head">
+        <span class="emoji">☁️</span>
+        <span class="title">Azure Synapse</span>
+      </div>
+      <div class="body">Enterprise data source. Developer A connects in <b>Import mode</b>.</div>
+    </div>
+
+    <div class="sgap"></div>
+
+    <div class="scard" id="s2">
+      <div class="head">
+        <span class="emoji">👤</span>
+        <span class="title">Developer A — Power BI Desktop</span>
+      </div>
+      <div class="body">Builds tables, relationships, DAX measures → <b>publishes to the Premium workspace</b>.</div>
+    </div>
+
+    <div class="sgap"></div>
+
+    <div class="scard mA" id="s3">
+      <div class="head">
+        <span class="emoji">🧊</span>
+        <span class="title">Semantic Model A</span>
+        <span class="stag blue">IMPORT</span>
+      </div>
+      <div class="body">Data compressed into <b>VertiPaq memory</b> on the capacity. Scheduled refresh from Synapse. RLS defined here flows downstream.</div>
+    </div>
+
+    <div class="sgap small"></div>
+
+    <!-- Developer B section -->
+    <div class="devband b">
+      <span class="pill">DEVELOPER B</span>
+      <span class="who">Contributor + Build permission on Model A</span>
+    </div>
+
+    <div class="scard" id="s4">
+      <div class="head">
+        <span class="emoji">👤</span>
+        <span class="title">Developer B — Power BI Desktop</span>
+      </div>
+      <div class="body"><b>Live-connects</b> to Semantic Model A, then <b>adds local tables</b>. The moment tables are added, the live connection silently converts to <b>DirectQuery over Analysis Services</b> — it's now a composite model.</div>
+    </div>
+
+    <div class="sgap"></div>
+
+    <div class="scard mB" id="s5">
+      <div class="head">
+        <span class="emoji">🔗</span>
+        <span class="title">Semantic Model B</span>
+        <span class="stag amber">NEW · COMPOSITE</span>
+      </div>
+      <div class="body">Publishing creates a <b>brand-new semantic model</b> — Model A stays untouched. Model B stores Developer B's tables plus a <b>metadata-only link</b> to Model A. <b>No data is copied.</b></div>
+    </div>
+
+    <div class="keyfact">
+      <h4>⚠ The consequence</h4>
+      <p>Two models now live on the capacity instead of one. Model B <b>depends</b> on Model A — structural changes or permission changes in A break B. And every report interaction or Copilot question on Model B queries Model A <b>live, every time</b>. See Tab 2 for what that journey looks like →</p>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== TAB 2 ==================== -->
+<div class="panel" id="panel2">
+
+  <div class="controls">
+    <button id="btnPlay" class="primary">⏸ Pause</button>
+    <button id="btnPrev">◀ Prev step</button>
+    <button id="btnNext">Next step ▶</button>
+    <button id="btnRestart">↺ Restart</button>
+  </div>
+
+  <div class="chips">
+    <span class="chip c1" data-step="0">1 · Question</span>
+    <span class="chip c2" data-step="1">2 · Copilot decomposes</span>
+    <span class="chip c3" data-step="2">3 · Hits Model B</span>
+    <span class="chip c4" data-step="3">4 · Round trip to Model A</span>
+    <span class="chip c5" data-step="4">5 · Results return</span>
+    <span class="chip c6" data-step="5">6 · Answer written</span>
+  </div>
+
+  <div class="caption" id="caption">Press play — or step through manually while you present.</div>
+
+  <div class="stage" id="stage">
+    <svg class="wires" id="wires"></svg>
+
+    <div class="card user" id="cardUser">
+      <div class="bubble q" id="bubbleQ">"How many calls were answered in California in January?"</div>
+      <div class="bubble a" id="bubbleA">"81,757 calls were answered in California in January…"</div>
+      <div class="head">
+        <span class="emoji">🙋</span>
+        <span class="title">Copilot User</span>
+      </div>
+      <div class="body">Viewing a report built on Model B. Types one natural-language question.</div>
+    </div>
+
+    <div class="gap"></div>
+
+    <div class="card copilot" id="cardCopilot">
+      <div class="head">
+        <span class="emoji">🤖</span>
+        <span class="title">Copilot (Fabric)</span>
+      </div>
+      <div class="body">One question becomes <b>multiple DAX queries</b>: ① inspect schema&nbsp; ② sample column values&nbsp; ③ run the answer query.</div>
+    </div>
+
+    <div class="gap"></div>
+
+    <div class="card modelB" id="cardB">
+      <div class="head">
+        <span class="emoji">🔗</span>
+        <span class="title">Semantic Model B</span>
+        <span class="tag composite">COMPOSITE</span>
+      </div>
+      <div class="body"><b>Local tables:</b> answered here instantly, in memory.<br><b>Model A's tables:</b> only <b>metadata</b> lives here — no data. Those queries must travel onward.</div>
+    </div>
+
+    <div class="gap"></div>
+
+    <div class="card modelA" id="cardA">
+      <div class="head">
+        <span class="emoji">🧊</span>
+        <span class="title">Semantic Model A</span>
+        <span class="tag import">IMPORT</span>
+      </div>
+      <div class="body">Executes each incoming query in <b>its own VertiPaq memory</b> — fast on its side, but this burns <b>Model A's capacity too</b>. Results ship back over the network.</div>
+    </div>
+
+    <div class="dot" id="d1"></div>
+    <div class="dot" id="d2"></div>
+    <div class="dot" id="d3"></div>
+  </div>
+
+  <div class="footer-note">
+    <h4>⚠ Why this feels slow</h4>
+    <p>Multiple queries × a network round trip each = stacked latency. A question that takes 3–5s on a pure import model can take 15–30s+ here, with timeout risk and shallower data sampling (weaker answers). Capacity units are consumed on <b>both</b> models per question. Copilot-first reports belong on a pure import model — or add the tables to Model A directly.</p>
+  </div>
+</div>
+
+<script>
+(function(){
+  const NS = 'http://www.w3.org/2000/svg';
+
+  /* ============ tabs ============ */
+  const tabBtn1 = document.getElementById('tabBtn1');
+  const tabBtn2 = document.getElementById('tabBtn2');
+  const panel1 = document.getElementById('panel1');
+  const panel2 = document.getElementById('panel2');
+
+  function showTab(n){
+    tabBtn1.classList.toggle('active', n===1);
+    tabBtn2.classList.toggle('active', n===2);
+    panel1.classList.toggle('show', n===1);
+    panel2.classList.toggle('show', n===2);
+    if(n===1){ requestAnimationFrame(buildStoryWires); }
+    if(n===2){ requestAnimationFrame(()=>{ buildWires(); }); }
+  }
+  tabBtn1.addEventListener('click', ()=>showTab(1));
+  tabBtn2.addEventListener('click', ()=>showTab(2));
+
+  /* ============ shared helpers ============ */
+  function centerIn(container, el){
+    const s = container.getBoundingClientRect(), r = el.getBoundingClientRect();
+    return { x: r.left - s.left + r.width/2,
+             top: r.top - s.top, bottom: r.bottom - s.top,
+             left: r.left - s.left, right: r.right - s.left,
+             midY: r.top - s.top + r.height/2 };
+  }
+  function addMarkers(svg){
+    const defs = document.createElementNS(NS,'defs');
+    [['arrGray','#94a7ba'],['arrRed','#c0392b'],['arrGreen','#148a52'],['arrBlue','#0f6cbd'],['arrAmber','#b45d00']].forEach(([id,c])=>{
+      const m = document.createElementNS(NS,'marker');
+      m.setAttribute('id', id + '_' + svg.id);
+      m.setAttribute('markerWidth','8'); m.setAttribute('markerHeight','8');
+      m.setAttribute('refX','6'); m.setAttribute('refY','4'); m.setAttribute('orient','auto');
+      const mp = document.createElementNS(NS,'path');
+      mp.setAttribute('d','M0,0 L8,4 L0,8 z'); mp.setAttribute('fill',c);
+      m.appendChild(mp); defs.appendChild(m);
+    });
+    svg.appendChild(defs);
+  }
+  function mkPathIn(svg, d, color, dash, arrowId){
+    const p = document.createElementNS(NS,'path');
+    p.setAttribute('d', d); p.setAttribute('fill','none');
+    p.setAttribute('stroke', color); p.setAttribute('stroke-width','2.5');
+    if(dash) p.setAttribute('stroke-dasharray','7 6');
+    p.setAttribute('stroke-linecap','round');
+    if(arrowId) p.setAttribute('marker-end', 'url(#'+arrowId+'_'+svg.id+')');
+    svg.appendChild(p);
+    return p;
+  }
+  function mkLabelIn(svg,x,y,text,color,anchor){
+    const t = document.createElementNS(NS,'text');
+    t.setAttribute('x',x); t.setAttribute('y',y);
+    t.setAttribute('font-size','11.5'); t.setAttribute('font-weight','700');
+    t.setAttribute('fill',color); t.setAttribute('text-anchor',anchor||'middle');
+    t.setAttribute('font-family','Segoe UI, Arial');
+    t.textContent = text;
+    svg.appendChild(t);
+  }
+
+  /* ============ TAB 1 wires ============ */
+  const story = document.getElementById('story');
+  const wires1 = document.getElementById('wires1');
+
+  function buildStoryWires(){
+    wires1.innerHTML = '';
+    const H = story.scrollHeight;
+    wires1.setAttribute('viewBox','0 0 '+story.clientWidth+' '+H);
+    wires1.style.height = H + 'px';
+    addMarkers(wires1);
+
+    const s1 = centerIn(story, document.getElementById('s1'));
+    const s2 = centerIn(story, document.getElementById('s2'));
+    const s3 = centerIn(story, document.getElementById('s3'));
+    const s4 = centerIn(story, document.getElementById('s4'));
+    const s5 = centerIn(story, document.getElementById('s5'));
+    const cx = s1.x;
+
+    mkPathIn(wires1, `M ${cx} ${s1.bottom} L ${cx} ${s2.top-4}`, '#0f6cbd', false, 'arrBlue');
+    mkLabelIn(wires1, cx, (s1.bottom+s2.top)/2+4, 'connects · Import mode', '#0f6cbd');
+
+    mkPathIn(wires1, `M ${cx} ${s2.bottom} L ${cx} ${s3.top-4}`, '#0f6cbd', false, 'arrBlue');
+    mkLabelIn(wires1, cx, (s2.bottom+s3.top)/2+4, 'Publish', '#0f6cbd');
+
+    mkPathIn(wires1, `M ${cx} ${s3.bottom} L ${cx} ${s4.top-4}`, '#b45d00', false, 'arrAmber');
+    mkLabelIn(wires1, cx, (s3.bottom+s4.top)/2+9, 'live connect', '#b45d00');
+
+    mkPathIn(wires1, `M ${cx} ${s4.bottom} L ${cx} ${s5.top-4}`, '#b45d00', false, 'arrAmber');
+    mkLabelIn(wires1, cx, (s4.bottom+s5.top)/2+4, 'Publish → NEW model created', '#b45d00');
+
+    // dashed dependency arrow: Model B back to Model A along right side
+    const rx = Math.min(story.clientWidth - 6, s3.right + 52);
+    mkPathIn(wires1, `M ${s5.right} ${s5.midY} C ${rx} ${s5.midY}, ${rx} ${s3.midY}, ${s3.right+4} ${s3.midY}`, '#c0392b', true, 'arrRed');
+    mkLabelIn(wires1, rx+2, (s3.midY+s5.midY)/2, '', '#c0392b');
+    const t = document.createElementNS(NS,'text');
+    t.setAttribute('x', rx); t.setAttribute('y', (s3.midY+s5.midY)/2);
+    t.setAttribute('font-size','11'); t.setAttribute('font-weight','700');
+    t.setAttribute('fill','#c0392b'); t.setAttribute('text-anchor','middle');
+    t.setAttribute('font-family','Segoe UI, Arial');
+    t.setAttribute('transform', `rotate(90 ${rx} ${(s3.midY+s5.midY)/2})`);
+    t.textContent = 'depends on A · queries it live';
+    wires1.appendChild(t);
+  }
+
+  /* ============ TAB 2 animation ============ */
+  const stage = document.getElementById('stage');
+  const svg = document.getElementById('wires');
+  const caption = document.getElementById('caption');
+  const chips = [...document.querySelectorAll('.chip')];
+  const cards = {
+    user: document.getElementById('cardUser'),
+    copilot: document.getElementById('cardCopilot'),
+    b: document.getElementById('cardB'),
+    a: document.getElementById('cardA')
+  };
+  const bubbleQ = document.getElementById('bubbleQ');
+  const bubbleA = document.getElementById('bubbleA');
+  const dots = [document.getElementById('d1'), document.getElementById('d2'), document.getElementById('d3')];
+  let paths = {};
+
+  function buildWires(){
+    svg.innerHTML = '';
+    const H = stage.scrollHeight;
+    if(H < 50) return; // hidden
+    svg.setAttribute('viewBox','0 0 '+stage.clientWidth+' '+H);
+    svg.style.height = H + 'px';
+    addMarkers(svg);
+
+    const u = centerIn(stage, cards.user), c = centerIn(stage, cards.copilot),
+          b = centerIn(stage, cards.b), a = centerIn(stage, cards.a);
+    const cx = u.x;
+    const rx = Math.min(stage.clientWidth - 8, u.right + 60);
+
+    paths.uc = mkPathIn(svg, `M ${cx-30} ${u.bottom} L ${cx-30} ${c.top}`, '#94a7ba', false, 'arrGray');
+    paths.cb = mkPathIn(svg, `M ${cx-30} ${c.bottom} L ${cx-30} ${b.top}`, '#94a7ba', false, 'arrGray');
+    paths.ba = mkPathIn(svg, `M ${cx-30} ${b.bottom} L ${cx-30} ${a.top}`, '#c0392b', true, 'arrRed');
+    mkLabelIn(svg, cx-42, (b.bottom + a.top)/2 + 4, 'outbound DAX (XMLA) — per query, no cache', '#c0392b', 'end');
+
+    paths.ab = mkPathIn(svg, `M ${cx+30} ${a.top} L ${cx+30} ${b.bottom}`, '#148a52', true, 'arrGreen');
+    mkLabelIn(svg, cx+42, (b.bottom + a.top)/2 + 4, 'results returned', '#148a52', 'start');
+    paths.bc = mkPathIn(svg, `M ${u.right} ${b.midY} C ${rx} ${b.midY}, ${rx} ${c.midY}, ${u.right} ${c.midY}`, '#148a52', true, 'arrGreen');
+    paths.cu = mkPathIn(svg, `M ${u.right} ${c.midY - 24} C ${rx-14} ${c.midY - 24}, ${rx-14} ${u.midY}, ${u.right} ${u.midY}`, '#148a52', false, 'arrGreen');
+  }
+
+  function clamp(v){ return Math.max(0, Math.min(1, v)); }
+  function lit(...keys){
+    Object.values(cards).forEach(el=>el.classList.remove('lit'));
+    keys.forEach(k=>cards[k].classList.add('lit'));
+  }
+  function travel(dot, path, t, color){
+    if(!path || !path.getTotalLength) return;
+    t = clamp(t);
+    const len = path.getTotalLength();
+    if(!len) return;
+    const pt = path.getPointAtLength(len * t);
+    dot.style.opacity = (t>=1 || t<=0) ? 0 : 1;
+    dot.style.left = pt.x + 'px';
+    dot.style.top = pt.y + 'px';
+    dot.style.background = color;
+  }
+
+  const steps = [
+    { dur:2600, caption:'<strong>Step 1.</strong> The user types one natural-language question into Copilot on a report built on <strong>Model B</strong>.',
+      run(t){ lit('user'); bubbleQ.classList.add('show');
+              if(t>0.35) travel(dots[0], paths.uc, (t-0.35)/0.65, '#b45d00'); } },
+    { dur:2400, caption:'<strong>Step 2.</strong> Copilot decomposes it into <strong>multiple DAX queries</strong> — schema inspection, value sampling, then the answer query.',
+      run(t){ lit('copilot');
+              if(t>0.3) travel(dots[0], paths.cb, (t-0.3)/0.7, '#b45d00'); } },
+    { dur:2200, caption:'<strong>Step 3.</strong> The queries hit <strong>Model B</strong>. Local tables answer instantly — but Model A\'s tables are only <strong>metadata</strong> here.',
+      run(t){ lit('b'); } },
+    { dur:3200, caption:'<strong>Step 4.</strong> Every remote query makes a <strong>live round trip to Model A</strong> over XMLA. Three queries = three trips. Nothing is cached.',
+      run(t){ lit('b','a');
+              travel(dots[0], paths.ba, clamp(t/0.6), '#c0392b');
+              if(t>0.2) travel(dots[1], paths.ba, clamp((t-0.2)/0.6), '#c0392b');
+              if(t>0.4) travel(dots[2], paths.ba, clamp((t-0.4)/0.6), '#c0392b'); } },
+    { dur:3000, caption:'<strong>Step 5.</strong> Model A executes each query in its own memory (burning <strong>its</strong> capacity too), then results travel back and get <strong>stitched</strong> with local tables in Model B.',
+      run(t){ lit('a','b');
+              travel(dots[0], paths.ab, clamp(t/0.5), '#148a52');
+              if(t>0.15) travel(dots[1], paths.ab, clamp((t-0.15)/0.5), '#148a52');
+              if(t>0.5) travel(dots[0], paths.bc, clamp((t-0.5)/0.5), '#148a52'); } },
+    { dur:2800, caption:'<strong>Step 6.</strong> Copilot writes the narrative from the returned data and the answer lands back with the user. Total: <strong>seconds of stacked latency, capacity burned on both models.</strong>',
+      run(t){ lit('copilot','user');
+              travel(dots[0], paths.cu, clamp(t/0.55), '#148a52');
+              if(t>0.6){ bubbleA.classList.add('show'); } } }
+  ];
+
+  let stepIdx = 0, stepStart = performance.now(), playing = true;
+
+  function resetVisuals(){
+    dots.forEach(d=>d.style.opacity=0);
+    bubbleQ.classList.remove('show');
+    bubbleA.classList.remove('show');
+  }
+  function setStep(i, keepBubbles){
+    stepIdx = (i + steps.length) % steps.length;
+    stepStart = performance.now();
+    if(!keepBubbles) resetVisuals();
+    if(stepIdx > 0) bubbleQ.classList.add('show');
+    chips.forEach((c,ci)=>c.classList.toggle('active', ci===stepIdx));
+    caption.innerHTML = steps[stepIdx].caption;
+  }
+  function frame(now){
+    if(panel2.classList.contains('show')){
+      const s = steps[stepIdx];
+      const t = clamp((now - stepStart) / s.dur);
+      dots.forEach(d=>d.style.opacity=0);
+      s.run(t);
+      if(playing && t >= 1){
+        if(stepIdx === steps.length - 1){ setStep(0); }
+        else setStep(stepIdx + 1, true);
+      }
+    }
+    requestAnimationFrame(frame);
+  }
+
+  const btnPlay = document.getElementById('btnPlay');
+  btnPlay.addEventListener('click', ()=>{
+    playing = !playing;
+    btnPlay.textContent = playing ? '⏸ Pause' : '▶ Play';
+    if(playing) stepStart = performance.now();
+  });
+  document.getElementById('btnNext').addEventListener('click', ()=>{ playing=false; btnPlay.textContent='▶ Play'; setStep(stepIdx+1, true); stepStart = performance.now() - steps[stepIdx].dur; });
+  document.getElementById('btnPrev').addEventListener('click', ()=>{ playing=false; btnPlay.textContent='▶ Play'; setStep(stepIdx-1, true); stepStart = performance.now() - steps[stepIdx].dur; });
+  document.getElementById('btnRestart').addEventListener('click', ()=>{ playing=true; btnPlay.textContent='⏸ Pause'; setStep(0); });
+  chips.forEach(c=>c.addEventListener('click', ()=>{ playing=false; btnPlay.textContent='▶ Play'; setStep(+c.dataset.step, true); stepStart = performance.now() - steps[stepIdx].dur; }));
+
+  window.addEventListener('resize', ()=>{ buildStoryWires(); buildWires(); });
+
+  buildStoryWires();
+  setStep(0);
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
