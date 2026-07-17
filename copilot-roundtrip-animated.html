@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Copilot Question — Round Trip Journey</title>
+<style>
+  :root{
+    --ink:#1b2733; --muted:#5b6b7a;
+    --blue:#1466b8; --orange:#c25e00; --warn:#a11d33; --green:#1a7f4b;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:"Segoe UI",-apple-system,Roboto,Arial,sans-serif;
+    background:#fff;color:var(--ink);
+    display:flex;flex-direction:column;align-items:center;
+    padding:30px 16px 50px;
+  }
+  h1{font-size:21px;font-weight:650;text-align:center}
+  .sub{font-size:13px;color:var(--muted);text-align:center;margin:5px 0 8px}
+  .loopnote{font-size:11.5px;color:var(--muted);text-align:center;margin-bottom:10px}
+  svg{max-width:100%;height:auto}
+  @media (prefers-reduced-motion: reduce){
+    .dot{display:none}
+  }
+</style>
+</head>
+<body>
+
+<h1>What Happens When a Copilot User Asks a Question</h1>
+<p class="sub">Report built on Semantic Model B (composite) — chained to Semantic Model A (import)</p>
+<p class="loopnote">▶ Animation loops every 12 seconds — watch the orange query dots go down and the green result dots come back</p>
+
+<svg width="820" height="1210" viewBox="0 0 820 1210" xmlns="http://www.w3.org/2000/svg">
+
+  <defs>
+    <marker id="gray-arrow" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 z" fill="#b7c3cf"/>
+    </marker>
+    <filter id="soft" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="1" stdDeviation="2" flood-color="#1b2733" flood-opacity="0.10"/>
+    </filter>
+  </defs>
+
+  <!-- ===================== STEP RAIL (left) ===================== -->
+  <g font-family="Segoe UI, Arial" font-size="12">
+    <!-- step 1 -->
+    <g>
+      <circle cx="52" cy="70" r="13" fill="#eef2f6" stroke="#c9d4de" stroke-width="1.5">
+        <animate attributeName="fill" values="#eef2f6;#c25e00;#c25e00;#eef2f6;#eef2f6" keyTimes="0;0.01;0.125;0.15;1" dur="12s" repeatCount="indefinite"/>
+      </circle>
+      <text x="52" y="74" text-anchor="middle" font-weight="700" fill="#5b6b7a">1</text>
+      <text x="76" y="66" fill="#1b2733" font-weight="650">User asks a question</text>
+      <text x="76" y="82" fill="#5b6b7a" font-size="11">natural language prompt</text>
+    </g>
+    <!-- step 2 -->
+    <g>
+      <circle cx="52" cy="250" r="13" fill="#eef2f6" stroke="#c9d4de" stroke-width="1.5">
+        <animate attributeName="fill" values="#eef2f6;#eef2f6;#c25e00;#c25e00;#eef2f6;#eef2f6" keyTimes="0;0.125;0.13;0.25;0.27;1" dur="12s" repeatCount="indefinite"/>
+      </circle>
+      <text x="52" y="254" text-anchor="middle" font-weight="700" fill="#5b6b7a">2</text>
+      <text x="76" y="246" fill="#1b2733" font-weight="650">Copilot decomposes it</text>
+      <text x="76" y="262" fill="#5b6b7a" font-size="11">schema check + value sampling + answer query</text>
+    </g>
+    <!-- step 3 -->
+    <g>
+      <circle cx="52" cy="445" r="13" fill="#eef2f6" stroke="#c9d4de" stroke-width="1.5">
+        <animate attributeName="fill" values="#eef2f6;#eef2f6;#c25e00;#c25e00;#eef2f6;#eef2f6" keyTimes="0;0.25;0.26;0.375;0.39;1" dur="12s" repeatCount="indefinite"/>
+      </circle>
+      <text x="52" y="449" text-anchor="middle" font-weight="700" fill="#5b6b7a">3</text>
+      <text x="76" y="441" fill="#1b2733" font-weight="650">DAX hits Model B</text>
+      <text x="76" y="457" fill="#5b6b7a" font-size="11">local tables answered here instantly</text>
+    </g>
+    <!-- step 4 -->
+    <g>
+      <circle cx="52" cy="660" r="13" fill="#eef2f6" stroke="#c9d4de" stroke-width="1.5">
+        <animate attributeName="fill" values="#eef2f6;#eef2f6;#a11d33;#a11d33;#eef2f6;#eef2f6" keyTimes="0;0.375;0.38;0.54;0.56;1" dur="12s" repeatCount="indefinite"/>
+      </circle>
+      <text x="52" y="664" text-anchor="middle" font-weight="700" fill="#5b6b7a">4</text>
+      <text x="76" y="656" fill="#a11d33" font-weight="650">Live round trip to Model A</text>
+      <text x="76" y="672" fill="#5b6b7a" font-size="11">every remote-table query · XMLA · no cache</text>
+    </g>
+    <!-- step 5 -->
+    <g>
+      <circle cx="52" cy="855" r="13" fill="#eef2f6" stroke="#c9d4de" stroke-width="1.5">
+        <animate attributeName="fill" values="#eef2f6;#eef2f6;#1a7f4b;#1a7f4b;#eef2f6;#eef2f6" keyTimes="0;0.54;0.55;0.71;0.73;1" dur="12s" repeatCount="indefinite"/>
+      </circle>
+      <text x="52" y="859" text-anchor="middle" font-weight="700" fill="#5b6b7a">5</text>
+      <text x="76" y="851" fill="#1a7f4b" font-weight="650">Results stitched in Model B</text>
+      <text x="76" y="867" fill="#5b6b7a" font-size="11">remote results joined with local tables</text>
+    </g>
+    <!-- step 6 -->
+    <g>
+      <circle cx="52" cy="1040" r="13" fill="#eef2f6" stroke="#c9d4de" stroke-width="1.5">
+        <animate attributeName="fill" values="#eef2f6;#eef2f6;#1a7f4b;#1a7f4b;#eef2f6" keyTimes="0;0.71;0.72;0.96;1" dur="12s" repeatCount="indefinite"/>
+      </circle>
+      <text x="52" y="1044" text-anchor="middle" font-weight="700" fill="#5b6b7a">6</text>
+      <text x="76" y="1036" fill="#1b2733" font-weight="650">Copilot writes the answer</text>
+      <text x="76" y="1052" fill="#5b6b7a" font-size="11">narrative generated from returned data</text>
+    </g>
+  </g>
+
+  <!-- ===================== MAIN FLOW (center-right) ===================== -->
+
+  <!-- USER BOX -->
+  <g filter="url(#soft)">
+    <rect x="360" y="30" width="380" height="86" rx="10" fill="#fbfcfe" stroke="#b8c4d0" stroke-width="1.5"/>
+    <text x="386" y="62" font-size="22">👤</text>
+    <text x="420" y="58" font-size="14.5" font-weight="700" fill="#1b2733">Copilot User</text>
+    <text x="420" y="78" font-size="12" fill="#5b6b7a">viewing a report built on Model B</text>
+  </g>
+  <!-- prompt bubble -->
+  <g>
+    <rect x="420" y="122" width="300" height="34" rx="16" fill="#c25e00" opacity="0.9">
+      <animate attributeName="opacity" values="0;0.95;0.95;0.95;0" keyTimes="0;0.02;0.125;0.9;1" dur="12s" repeatCount="indefinite"/>
+    </rect>
+    <text x="570" y="143" text-anchor="middle" font-size="12" font-weight="650" fill="#ffffff">
+      "How many calls were answered in California in Jan?"
+      <animate attributeName="opacity" values="0;1;1;1;0" keyTimes="0;0.02;0.125;0.9;1" dur="12s" repeatCount="indefinite"/>
+    </text>
+  </g>
+
+  <!-- connector user -> copilot -->
+  <line x1="550" y1="166" x2="550" y2="212" stroke="#b7c3cf" stroke-width="2" marker-end="url(#gray-arrow)"/>
+
+  <!-- COPILOT BOX -->
+  <g filter="url(#soft)">
+    <rect x="360" y="218" width="380" height="92" rx="10" fill="#f4effc" stroke="#7a5bc7" stroke-width="1.5">
+      <animate attributeName="stroke-width" values="1.5;3;3;1.5;1.5" keyTimes="0;0.13;0.25;0.27;1" dur="12s" repeatCount="indefinite"/>
+    </rect>
+    <text x="386" y="252" font-size="22">🤖</text>
+    <text x="420" y="248" font-size="14.5" font-weight="700" fill="#5a3fa8">Copilot (Fabric)</text>
+    <text x="420" y="268" font-size="12" fill="#5b6b7a">Turns one question into MULTIPLE DAX queries:</text>
+    <text x="420" y="286" font-size="11.5" fill="#5b6b7a">① inspect schema  ② sample column values  ③ answer query</text>
+  </g>
+
+  <!-- connector copilot -> model B -->
+  <line x1="550" y1="310" x2="550" y2="400" stroke="#b7c3cf" stroke-width="2" marker-end="url(#gray-arrow)"/>
+  <text x="565" y="360" font-size="11" font-weight="650" fill="#5b6b7a">DAX queries</text>
+
+  <!-- MODEL B BOX -->
+  <g filter="url(#soft)">
+    <rect x="360" y="406" width="380" height="110" rx="10" fill="#fdf1e3" stroke="#c25e00" stroke-width="2" stroke-dasharray="7 5">
+      <animate attributeName="stroke-width" values="2;3.5;3.5;2;2" keyTimes="0;0.26;0.375;0.4;1" dur="12s" repeatCount="indefinite"/>
+    </rect>
+    <text x="386" y="440" font-size="22">🔗</text>
+    <text x="420" y="436" font-size="14.5" font-weight="700" fill="#c25e00">Semantic Model B (composite)</text>
+    <text x="420" y="456" font-size="12" fill="#5b6b7a">• Local tables → answered here, in-memory, fast</text>
+    <text x="420" y="474" font-size="12" fill="#5b6b7a">• Model A's tables → only METADATA here, no data</text>
+    <text x="420" y="494" font-size="12" font-weight="650" fill="#a11d33">→ those parts must travel onward…</text>
+  </g>
+
+  <!-- DOWN connector B -> A (query path) -->
+  <line x1="480" y1="516" x2="480" y2="615" stroke="#a11d33" stroke-width="2" stroke-dasharray="6 5"/>
+  <text x="315" y="560" font-size="11.5" font-weight="700" fill="#a11d33">outbound DAX over XMLA</text>
+  <text x="330" y="576" font-size="11" fill="#a11d33">one per remote query — ×3 here</text>
+
+  <!-- UP connector A -> B (results path) -->
+  <line x1="620" y1="615" x2="620" y2="516" stroke="#1a7f4b" stroke-width="2" stroke-dasharray="6 5"/>
+  <text x="638" y="560" font-size="11.5" font-weight="700" fill="#1a7f4b">results returned</text>
+  <text x="638" y="576" font-size="11" fill="#1a7f4b">network latency both ways</text>
+
+  <!-- MODEL A BOX -->
+  <g filter="url(#soft)">
+    <rect x="360" y="620" width="380" height="104" rx="10" fill="#e8f1fa" stroke="#1466b8" stroke-width="2">
+      <animate attributeName="stroke-width" values="2;3.5;3.5;2;2" keyTimes="0;0.39;0.55;0.58;1" dur="12s" repeatCount="indefinite"/>
+    </rect>
+    <text x="386" y="654" font-size="22">🧊</text>
+    <text x="420" y="650" font-size="14.5" font-weight="700" fill="#1466b8">Semantic Model A (import)</text>
+    <text x="420" y="670" font-size="12" fill="#5b6b7a">Executes each incoming query in ITS memory (VertiPaq)</text>
+    <text x="420" y="688" font-size="12" fill="#5b6b7a">Fast on its side — but consumes THIS model's CU too</text>
+    <text x="420" y="708" font-size="12" font-weight="650" fill="#a11d33">⚠ capacity billed on BOTH models per question</text>
+  </g>
+
+  <!-- RESULTS: B -> Copilot (right side up) -->
+  <path d="M 740 450 C 790 450, 790 264, 740 264" fill="none" stroke="#1a7f4b" stroke-width="2" stroke-dasharray="6 5"/>
+  <text x="800" y="352" font-size="11.5" font-weight="700" fill="#1a7f4b" transform="rotate(90 800 352)" text-anchor="middle">stitched results ↑ to Copilot</text>
+
+  <!-- ANSWER: Copilot -> user (right side up) -->
+  <path d="M 740 240 C 775 240, 775 73, 740 73" fill="none" stroke="#1a7f4b" stroke-width="2"/>
+
+  <!-- answer bubble -->
+  <g>
+    <rect x="150" y="122" width="250" height="34" rx="16" fill="#1a7f4b">
+      <animate attributeName="opacity" values="0;0;1;1;0" keyTimes="0;0.83;0.86;0.97;1" dur="12s" repeatCount="indefinite"/>
+    </rect>
+    <text x="275" y="143" text-anchor="middle" font-size="12" font-weight="650" fill="#ffffff">
+      "81,757 calls were answered in California…"
+      <animate attributeName="opacity" values="0;0;1;1;0" keyTimes="0;0.83;0.86;0.97;1" dur="12s" repeatCount="indefinite"/>
+    </text>
+  </g>
+
+  <!-- ===================== ANIMATED DOTS ===================== -->
+  <!-- forward: user -> copilot (1.5s–3s of 12s => keyTimes 0.125–0.25) -->
+  <circle class="dot" r="6" fill="#c25e00">
+    <animateMotion dur="12s" repeatCount="indefinite" calcMode="linear"
+      keyPoints="0;0;1;1" keyTimes="0;0.125;0.25;1"
+      path="M550,120 L550,214"/>
+    <animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.124;0.126;0.245;0.25;1" dur="12s" repeatCount="indefinite"/>
+  </circle>
+
+  <!-- forward: copilot -> B (3s–4.5s => 0.25–0.375) -->
+  <circle class="dot" r="6" fill="#c25e00">
+    <animateMotion dur="12s" repeatCount="indefinite" calcMode="linear"
+      keyPoints="0;0;1;1" keyTimes="0;0.25;0.375;1"
+      path="M550,312 L550,402"/>
+    <animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.249;0.251;0.37;0.375;1" dur="12s" repeatCount="indefinite"/>
+  </circle>
+
+  <!-- round trip: B -> A, three staggered red dots (4.5s–6.5s => 0.375–0.54) -->
+  <circle class="dot" r="6" fill="#a11d33">
+    <animateMotion dur="12s" repeatCount="indefinite" calcMode="linear"
+      keyPoints="0;0;1;1" keyTimes="0;0.375;0.46;1"
+      path="M480,518 L480,616"/>
+    <animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.374;0.376;0.455;0.46;1" dur="12s" repeatCount="indefinite"/>
+  </circle>
+  <circle class="dot" r="6" fill="#a11d33">
+    <animateMotion dur="12s" repeatCount="indefinite" calcMode="linear"
+      keyPoints="0;0;1;1" keyTimes="0;0.41;0.495;1"
+      path="M480,518 L480,616"/>
+    <animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.409;0.411;0.49;0.495;1" dur="12s" repeatCount="indefinite"/>
+  </circle>
+  <circle class="dot" r="6" fill="#a11d33">
+    <animateMotion dur="12s" repeatCount="indefinite" calcMode="linear"
+      keyPoints="0;0;1;1" keyTimes="0;0.445;0.53;1"
+      path="M480,518 L480,616"/>
+    <animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.444;0.446;0.525;0.53;1" dur="12s" repeatCount="indefinite"/>
+  </circle>
+
+  <!-- results: A -> B, green dots (6.5s–8.5s => 0.54–0.71) -->
+  <circle class="dot" r="6" fill="#1a7f4b">
+    <animateMotion dur="12s" repeatCount="indefinite" calcMode="linear"
+      keyPoints="0;0;1;1" keyTimes="0;0.54;0.625;1"
+      path="M620,616 L620,518"/>
+    <animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.539;0.541;0.62;0.625;1" dur="12s" repeatCount="indefinite"/>
+  </circle>
+  <circle class="dot" r="6" fill="#1a7f4b">
+    <animateMotion dur="12s" repeatCount="indefinite" calcMode="linear"
+      keyPoints="0;0;1;1" keyTimes="0;0.585;0.67;1"
+      path="M620,616 L620,518"/>
+    <animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.584;0.586;0.665;0.67;1" dur="12s" repeatCount="indefinite"/>
+  </circle>
+
+  <!-- results: B -> Copilot along right curve (8.5s–10s => 0.71–0.83) -->
+  <circle class="dot" r="6" fill="#1a7f4b">
+    <animateMotion dur="12s" repeatCount="indefinite" calcMode="linear"
+      keyPoints="0;0;1;1" keyTimes="0;0.71;0.83;1"
+      path="M 740 450 C 790 450, 790 264, 740 264"/>
+    <animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.709;0.711;0.825;0.83;1" dur="12s" repeatCount="indefinite"/>
+  </circle>
+
+  <!-- answer: Copilot -> user (10s–11.5s => 0.83–0.96) -->
+  <circle class="dot" r="6" fill="#1a7f4b">
+    <animateMotion dur="12s" repeatCount="indefinite" calcMode="linear"
+      keyPoints="0;0;1;1" keyTimes="0;0.83;0.96;1"
+      path="M 740 240 C 775 240, 775 73, 740 73"/>
+    <animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.829;0.831;0.955;0.96;1" dur="12s" repeatCount="indefinite"/>
+  </circle>
+
+  <!-- ===================== BOTTOM CALLOUT ===================== -->
+  <g>
+    <rect x="60" y="1090" width="700" height="96" rx="10" fill="#fbeaee" stroke="#eccdd4"/>
+    <rect x="60" y="1090" width="5" height="96" fill="#a11d33"/>
+    <text x="84" y="1118" font-size="13" font-weight="700" fill="#a11d33">⚠ Why Copilot feels slow on Model B</text>
+    <text x="84" y="1140" font-size="12.5" fill="#1b2733">One question = multiple queries × one round trip each. Latency stacks: 3–5s on pure import can become</text>
+    <text x="84" y="1158" font-size="12.5" fill="#1b2733">15–30s+ here. Copilot may time out or sample less data → weaker answers. CU is burned on BOTH models.</text>
+    <text x="84" y="1178" font-size="12" font-weight="650" fill="#5b6b7a">Fix: build Copilot-first reports on a pure import model, or add the tables to Model A directly.</text>
+  </g>
+
+</svg>
+
+</body>
+</html>
