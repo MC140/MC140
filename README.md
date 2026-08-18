@@ -7,24 +7,27 @@ MC140/MC140 is a ✨ special ✨ repository because its `README.md` (this file) 
 You can click the Preview link to take a look at your changes.
 --->
 
-Convert the Power BI project under input/SalesModel.
+1. Open Power Automate and sign in with your work account.
+2. Select My flows → New flow → Scheduled cloud flow.
+3. Enter:
+    * Flow name: Friday Timesheet Reminder
+    * Repeat every: 1 Week
+    * Starting: Choose the next Friday at 1:00 PM
+4. Select Create.
+5. Open the Recurrence trigger and configure:
+    * Time zone: (UTC-05:00) Eastern Time (US & Canada)
+    * On these days: Friday
+    * At these hours: 13
+    * At these minutes: 00
+6. Select + New step.
+7. Search for Microsoft Teams.
+8. Choose Post message in a chat or channel.
+9. Configure:
+    * Post as: Flow bot
+    * Post in: Channel
+    * Team: Select your Team
+    * Channel: Select the appropriate channel, such as General
+10. Enter this message:
 
-Create the complete parallel converted PBIP candidate at:
-
-output/SalesModel_StarSchema/
-
-Preserve the original internal PBIP project names and relative references.
-
-I need to directly open:
-
-output/SalesModel_StarSchema/SalesModel.pbip
-
-Create only one consolidated report:
-
-output/SalesModel_StarSchema/conversion-report.html
-
-The HTML must contain all assessment, mapping, conversion, measure-impact, report-impact, validation and warning information in separate interactive tabs.
-
-Do not generate separate Markdown, CSV or Mermaid report files.
-
-Do not modify anything under input.
+⏰ Friday Timesheet Reminder
+Please complete and submit your timesheet before the end of the day today. Thank you!
